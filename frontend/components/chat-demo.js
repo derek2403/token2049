@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CheckCircle2, Clock, ArrowRight } from "lucide-react";
+import { Clock, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { BorderBeam } from "@/components/ui/border-beam";
@@ -34,18 +34,6 @@ const allMessages = [
         recipient: "0x742d...4f2a",
         estimatedFee: "0.001 CELO",
       },
-    },
-    {
-      id: 4,
-      type: "attestation",
-      text: "EigenLayer AVS verified",
-      details: [
-        "Token: cUSD ✓",
-        "Amount: 100 ✓",
-        "Recipient: 0x742d...4f2a ✓",
-        "Fee within limits ✓",
-      ],
-      timestamp: "2:34 PM",
     },
     {
       id: 5,
@@ -312,25 +300,6 @@ export function ChatDemo() {
                 </div>
               )}
 
-              {/* EigenLayer Attestation Messages */}
-              {message.type === "attestation" && (
-                <div className="flex justify-start">
-                  <div className="max-w-[85%]">
-                    <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-2xl rounded-tl-md px-4 py-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle2 className="h-4 w-4 text-white" />
-                        <p className="text-sm text-green-300 font-medium">{message.text}</p>
-                      </div>
-                      <div className="space-y-1 pl-6">
-                        {message.details.map((detail, idx) => (
-                          <p key={idx} className="text-xs text-neutral-300">{detail}</p>
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-1">{message.timestamp}</p>
-                  </div>
-                </div>
-              )}
             </motion.div>
           ))}
           

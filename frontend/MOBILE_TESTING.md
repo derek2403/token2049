@@ -31,7 +31,6 @@
 - Example transactions:
   - "Send 100 cUSD to my brother"
   - "Swap my CELO for the best price on Ubeswap"
-- EigenLayer AVS verification display
 - Intent breakdown with transaction details
 
 ✅ **PWA Features**
@@ -51,14 +50,12 @@
 
 1. **Header Section:**
    - "Natural Language Transactions" title
-   - Feature badges (Instant Processing, EigenLayer Secured, EIP-712 Intents)
 
 2. **Chat Demo:**
    - Bot avatar with online indicator
    - User messages (right-aligned, blue)
    - Bot responses (left-aligned, dark gray)
    - Intent cards showing transaction details
-   - EigenLayer attestation messages (green)
 
 3. **How It Works:**
    - 3-step process explanation
@@ -76,17 +73,12 @@ To make this a fully functional app:
    - Implement actual transaction signing
    - Add WebSocket for real-time updates
 
-2. **EigenLayer Integration:**
-   - Connect to AVS operators
-   - Implement attestation verification
-   - Add slashing mechanism
-
-3. **Celo Integration:**
+2. **Celo Integration:**
    - Connect to Celo wallet (already have WalletProvider)
    - Implement actual transaction sending
    - Add Ubeswap routing
 
-4. **Service Worker:**
+3. **Service Worker:**
    - Add for offline capability
    - Cache static assets
    - Background sync

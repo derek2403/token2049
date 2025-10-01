@@ -1,7 +1,7 @@
 {
   "name": "Natural Language Transaction Engine",
   "short_name": "NL Transactions",
-  "description": "Crypto transactions with simple commands. Secured by EigenLayer AVS.",
+  "description": "Crypto transactions with simple commands on Celo blockchain.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

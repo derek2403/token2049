@@ -36,7 +36,7 @@ export default function Home() {
               className="text-center mb-4"
             >
               <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
-                Natural Language Transactions
+                Transfers made easy.
               </h1>
             </motion.div>
 
