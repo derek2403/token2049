@@ -37,6 +37,7 @@ export default function Chat() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const initialRenderRef = useRef(true); // Track initial render
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -44,6 +45,11 @@ export default function Chat() {
   };
 
   useEffect(() => {
+    // Skip scroll on initial render
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      return;
+    }
     scrollToBottom();
   }, [messages]);
 
