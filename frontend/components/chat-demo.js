@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Clock, ArrowRight } from "lucide-react";
+import { Clock, ArrowRight, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { BorderBeam } from "@/components/ui/border-beam";
@@ -242,7 +242,7 @@ export function ChatDemo() {
   }, [currentIndex, scrollToBottom]); // Include scrollToBottom in deps
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg relative overflow-hidden">
+    <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg relative overflow-hidden mb-4">
       {/* Border Beam Effects - Dual animated beams */}
       <BorderBeam 
         duration={6}
@@ -431,7 +431,15 @@ export function ChatDemo() {
             disabled
             className="flex-1 bg-transparent text-sm text-neutral-500 outline-none cursor-not-allowed"
           />
-          <Badge variant="secondary" className="text-xs">Let's Go!</Badge>
+          {/* Use same Send icon style as full chat page */}
+          <button
+            type="button"
+            disabled
+            aria-label="Send"
+            className="bg-neutral-700 text-white rounded-full h-10 w-10 p-0 opacity-60 cursor-not-allowed flex items-center justify-center flex-shrink-0"
+          >
+            <Send className="h-5 w-5 text-white" />
+          </button>
         </div>
       </div>
     </Card>
