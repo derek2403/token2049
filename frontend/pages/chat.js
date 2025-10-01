@@ -128,7 +128,15 @@ export default function Chat() {
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Use requestAnimationFrame to ensure DOM has updated after message render
+    requestAnimationFrame(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ 
+          behavior: "auto", // Changed to "auto" for instant scroll to avoid jank
+          block: "nearest" 
+        });
+      }
+    });
   };
 
   useEffect(() => {
@@ -138,7 +146,7 @@ export default function Chat() {
     }
     // Update the previous count
     prevMessageCountRef.current = messages.length;
-  }, [messages]);
+  }, [messages.length]); // Only depend on length, not entire messages array
 
   // Handle transaction confirmation
   useEffect(() => {
@@ -801,8 +809,8 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
               />
               
               {/* Messages Area - Scrollable within fixed container */}
-              <ScrollArea className="flex-1 p-2 md:p-6 min-h-0">
-                <div className="space-y-2">
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="space-y-2 p-2 md:p-6 pb-4">
                   {messages.map((message, index) => (
                     <motion.div
                       key={message.id}
@@ -828,8 +836,8 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
                       {/* Bot Messages */}
                       {message.type === "bot" && (
                         <div className="flex justify-start items-start gap-2">
-                          <Avatar className="h-7 w-7 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center flex-shrink-0">
-                            <Sparkles className="h-3.5 w-3.5 text-neutral-300" />
+                          <Avatar className="h-7 w-7 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            <img src="/celo.png" alt="Celo" className="w-full h-full object-cover" />
                           </Avatar>
                           <div className="max-w-[80%] md:max-w-[70%]">
                             <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-3 py-2">
@@ -1091,8 +1099,8 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
                       animate={{ opacity: 1 }}
                       className="flex justify-start items-start gap-2"
                     >
-                      <Avatar className="h-7 w-7 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center flex-shrink-0">
-                        <Bot className="h-3.5 w-3.5 text-neutral-300" />
+                      <Avatar className="h-7 w-7 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <img src="/celo.png" alt="Celo" className="w-full h-full object-cover" />
                       </Avatar>
                       <div className="bg-neutral-800 rounded-2xl rounded-tl-md px-3 py-2">
                         <div className="flex gap-1">
