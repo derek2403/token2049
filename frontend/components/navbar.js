@@ -36,7 +36,7 @@ export function Navbar() {
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden text-neutral-300 hover:text-white">
-                <Menu className="h-5 w-5" />
+                <Menu className="h-5 w-5 text-white" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
