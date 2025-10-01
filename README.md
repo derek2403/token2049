@@ -4,19 +4,27 @@
 
 **AI-powered transaction assistant built as a Celo MiniPay app with conversational interface**
 
-![LeftAI Landing Page](./frontend/public/landingpage.png)
-
 Check out the live demo of **LeftAI**: 👉 [Click here to try it out](https://token2049-two.vercel.app/)
 
 > **📱 MiniPay Ready:** This app is optimized for Celo MiniPay! Open the link in MiniPay browser for the best mobile experience.
 
-## Mobile Experience 📱
+## MiniPay Experience 📱
 
 LeftAI is designed as a mobile-first application, optimized for Celo MiniPay's mobile wallet experience. The interface provides an intuitive, chat-based interaction for crypto transactions on the go.
 
 <p align="center">
-  <img src="./frontend/public/mobile%20view.png" alt="LeftAI Mobile View" width="400">
+  <img src="./frontend/public/mobilelanding.png" alt="LeftAI MiniPay Landing" width="400">
 </p>
+
+<p align="center">
+  <img src="./frontend/public/mobile%20view.png" alt="LeftAI Mobile Chat Interface" width="400">
+</p>
+
+## PWA Web Experience 💻
+
+LeftAI also works as a Progressive Web App, providing a seamless experience across desktop and mobile browsers with full wallet integration.
+
+![LeftAI Desktop and Mobile View](./frontend/public/landingpage.png)
 
 ## Demo Video
 [🎥 Watch Demo Video](#)
