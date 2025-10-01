@@ -24,6 +24,7 @@ import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTr
 import { useContacts } from "@/hooks/useContacts";
 import { ContactAutocomplete } from "@/components/contact-autocomplete";
 import { usdToCelo, parseUsdAmount } from "@/lib/currencyUtils";
+import { useNotifications } from "@/components/notification-toast";
 
 /**
  * Chat Interface Page
@@ -36,6 +37,7 @@ export default function Chat() {
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
   const { contacts, searchContacts, getContactByName } = useContacts();
+  const { showNotification } = useNotifications();
   
   const [messages, setMessages] = useState([
     {
@@ -506,22 +508,26 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
       };
       setMessages(prev => [...prev, processingMessage]);
 
-      // Create notification data for each recipient
-      const notifications = requestData.fromAddresses.map((addr) => ({
-        id: `${Date.now()}-${addr}`,
-        type: "payment_request",
-        from: userAddress,
-        to: addr,
-        amount: requestData.amounts[addr],
-        tokenSymbol: requestData.tokenSymbol,
-        description: requestData.description || "Payment request",
-        timestamp: new Date().toISOString(),
-        status: "pending",
-      }));
+      // Get sender name (current user) - try to find in contacts or use address
+      const senderContact = contacts.find(c => c.wallet.toLowerCase() === userAddress?.toLowerCase());
+      const senderName = senderContact?.name || `${userAddress?.substring(0, 6)}...${userAddress?.substring(38)}`;
 
-      // In a real app, you would send this to a backend/notification service
-      // For now, we'll just show a success message
-      console.log("Payment requests created:", notifications);
+      // Show toast notification for each recipient (simulating their view)
+      requestData.fromAddresses.forEach((addr) => {
+        // Find recipient name
+        const recipientContact = contacts.find(c => c.wallet.toLowerCase() === addr.toLowerCase());
+        const recipientName = recipientContact?.name || `${addr.substring(0, 6)}...${addr.substring(38)}`;
+
+        // Show notification from receiver's perspective
+        showNotification({
+          type: 'payment_request',
+          title: 'Payment Request Received',
+          message: `${senderName} has requested payment from ${recipientName}`,
+          amount: requestData.amounts[addr],
+          tokenSymbol: requestData.tokenSymbol,
+          fromName: senderName,
+        });
+      });
 
       const successMessage = {
         id: Date.now() + 1,
@@ -529,23 +535,16 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
         text: "Payment request sent successfully!",
         details: [
           `Requesting ${requestData.totalAmount} ${requestData.tokenSymbol} total`,
-          `Split among ${requestData.fromAddresses.length} user(s)`,
+          `Sent to ${requestData.fromAddresses.length} user(s)`,
           requestData.splitType === 'equal_split' 
             ? `Each person owes ${requestData.amounts[requestData.fromAddresses[0]]} ${requestData.tokenSymbol}`
             : 'Custom amounts assigned',
+          `Popup notifications shown for all recipients`,
         ],
         timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       };
       
       setMessages(prev => [...prev, successMessage]);
-
-      // Optionally save to localStorage or send to backend
-      try {
-        const existingRequests = JSON.parse(localStorage.getItem('paymentRequests') || '[]');
-        localStorage.setItem('paymentRequests', JSON.stringify([...existingRequests, ...notifications]));
-      } catch (e) {
-        console.error('Failed to save payment requests to localStorage:', e);
-      }
 
     } catch (error) {
       console.error('Payment request error:', error);
