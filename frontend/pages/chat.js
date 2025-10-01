@@ -1347,7 +1347,6 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
               <div className="p-4 border-t border-neutral-800 bg-neutral-900/50 flex-shrink-0 relative z-20">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 relative">
-                    {/* Hidden input for actual text */}
                     <Input
                       ref={inputRef}
                       type="text"
@@ -1355,19 +1354,8 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
                       value={inputValue}
                       onChange={handleInputChange}
                       onKeyPress={handleKeyPress}
-                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full px-5 py-3 focus:ring-2 focus:ring-neutral-600 focus:border-transparent text-base h-12 relative z-10"
-                      style={{ caretColor: 'white' }}
+                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full px-5 py-3 focus:ring-2 focus:ring-neutral-600 focus:border-transparent text-base h-12"
                     />
-                    
-                    {/* Highlighted overlay showing formatted text */}
-                    {inputValue && (
-                      <div className="absolute inset-0 pointer-events-none px-5 py-3 rounded-full flex items-center overflow-hidden">
-                        <div className="text-base text-transparent select-none">
-                          <HighlightedText text={inputValue} />
-                        </div>
-                      </div>
-                    )}
-                    
                     {/* Contact Autocomplete Dropdown */}
                     {showContactDropdown && (
                       <ContactAutocomplete
