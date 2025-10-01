@@ -17,20 +17,26 @@ function HighlightedText({ text }) {
   // List of known user names to highlight (with and without @)
   const userNames = ['James ETHGlobal', 'derek eth', 'Derek'];
   
-  // Build regex pattern to match @mentions OR known user names
-  // Pattern: (@[A-Za-z0-9]+(?:\s+[A-Za-z0-9]+)*) OR (exact name matches)
-  const namesPattern = userNames.join('|');
-  const pattern = new RegExp(`(@[A-Za-z0-9]+(?:\\s+[A-Za-z0-9]+)*|${namesPattern})`, 'gi');
+  // Build regex pattern to match exact usernames with or without @
+  // Escape special chars and create pattern for @name or name
+  const escapedNames = userNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const withAt = escapedNames.map(name => '@' + name);
+  const allPatterns = [...withAt, ...escapedNames].join('|');
+  const pattern = new RegExp(`(${allPatterns})`, 'gi');
   
   const parts = text.split(pattern);
   
   return (
     <span>
       {parts.map((part, index) => {
+        if (!part) return null;
+        
         // Check if it's a mention (starts with @) or matches a known user name
-        const isMention = part?.startsWith('@');
+        const trimmedPart = part.trim();
+        const isMention = trimmedPart.startsWith('@');
         const isUserName = userNames.some(name => 
-          part?.toLowerCase() === name.toLowerCase()
+          trimmedPart.toLowerCase() === name.toLowerCase() ||
+          trimmedPart.toLowerCase() === '@' + name.toLowerCase()
         );
         
         if (isMention || isUserName) {
