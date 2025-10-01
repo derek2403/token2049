@@ -22,6 +22,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { ConnectButton } from "@/components/connect-button"
+import { NotificationBell } from "@/components/notification-bell"
 
 // Navigation links for the app
 const navLinks = [
@@ -211,16 +212,19 @@ export function Navbar() {
                 {/* Mobile balance and wallet section */}
                 <div className="mt-6 pt-6 border-t border-neutral-800/50 space-y-3">
                   <div className="px-3">
-                    {/* Balance button for mobile - Only show when connected */}
+                    {/* Notification & Balance buttons for mobile menu - Only show when connected */}
                     {isConnected && (
-                      <Button 
-                        variant="outline"
-                        onClick={() => setIsBalanceOpen(true)}
-                        className="w-full bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white mb-3"
-                      >
-                        <Wallet className="h-4 w-4 mr-2" />
-                        View Balance
-                      </Button>
+                      <div className="space-y-3 mb-3">
+                        <NotificationBell />
+                        <Button 
+                          variant="outline"
+                          onClick={() => setIsBalanceOpen(true)}
+                          className="w-full bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        >
+                          <Wallet className="h-4 w-4 mr-2" />
+                          View Balance
+                        </Button>
+                      </div>
                     )}
                     <ConnectButton />
                   </div>
@@ -237,9 +241,10 @@ export function Navbar() {
           </Link>
         </div>
         
-        {/* Mobile Balance Button - Visible on top right - Only show when connected */}
+        {/* Mobile Balance & Notification - Visible on top right - Only show when connected */}
         {isConnected && (
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <NotificationBell />
             <Button 
               variant="outline"
               size="sm"
@@ -269,17 +274,20 @@ export function Navbar() {
           ))}
           
           <div className="flex items-center gap-3">
-            {/* Balance button for desktop - Only show when connected */}
+            {/* Notification & Balance buttons for desktop - Only show when connected */}
             {isConnected && (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => setIsBalanceOpen(true)}
-                className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-              >
-                <Wallet className="h-4 w-4 mr-2" />
-                Balance
-              </Button>
+              <>
+                <NotificationBell />
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsBalanceOpen(true)}
+                  className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                >
+                  <Wallet className="h-4 w-4 mr-2" />
+                  Balance
+                </Button>
+              </>
             )}
             <ConnectButton />
           </div>
