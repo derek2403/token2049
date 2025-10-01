@@ -526,6 +526,7 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
           amount: requestData.amounts[addr],
           tokenSymbol: requestData.tokenSymbol,
           fromName: senderName,
+          fromAddress: userAddress, // Sender's wallet address for payment
         });
       });
 
