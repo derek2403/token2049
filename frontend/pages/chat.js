@@ -105,7 +105,8 @@ export default function Chat() {
     let replacements = [];
 
     // Extract contact mentions (@ContactName) and replace with wallet addresses
-    const mentionRegex = /@([A-Za-z\s]+)/g;
+    // Match @ followed by letters/spaces until we hit a non-letter/space or end of string
+    const mentionRegex = /@([A-Za-z\s]+?)(?=\s|$|\$|[^A-Za-z\s])/g;
     let match;
     while ((match = mentionRegex.exec(inputValue)) !== null) {
       const contactName = match[1].trim();
@@ -138,9 +139,16 @@ export default function Chat() {
       }
     }
 
-    // Apply replacements
+    // Apply replacements (do this in order to avoid conflicts)
     for (const rep of replacements) {
       processedInput = processedInput.replace(rep.original, rep.replacement);
+    }
+    
+    // Debug log to verify replacements
+    if (replacements.length > 0) {
+      console.log('Original input:', inputValue);
+      console.log('Replacements:', replacements);
+      console.log('Processed input:', processedInput);
     }
 
     const userMessage = {
@@ -717,26 +725,26 @@ You: I can help you send 50 CELO! Where would you like to send it? You can type 
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputValue("Send $10 to @Alice")}
+                onClick={() => setInputValue("Send $10 to @Alice Johnson")}
                 className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
               >
-                Send to Contact
+                Send to Alice
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputValue("Send $25 to @Bob")}
+                onClick={() => setInputValue("Send $25 to @Bob Smith")}
                 className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
               >
-                Pay $25
+                Pay Bob
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputValue("Transfer $50 to @Carol")}
+                onClick={() => setInputValue("Transfer $50 to @Carol Lee")}
                 className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
               >
-                Transfer $50
+                Transfer to Carol
               </Button>
             </div>
           </motion.div>
