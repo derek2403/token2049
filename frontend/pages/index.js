@@ -4,9 +4,9 @@ import { Navbar } from "@/components/navbar";
 import { ChatDemo } from "@/components/chat-demo";
 
 /**
- * Natural Language Transaction Engine Landing Page
+ * LeftAI Landing Page
  * Mobile-first design optimized for iPhone 13 Pro Max (428x926px)
- * Demonstrates chatbot interface for crypto transactions
+ * Demonstrates LeftAI chatbot interface for crypto transactions
  * PWA ready for iOS
  */
 export default function Home() {
@@ -42,7 +42,7 @@ export default function Home() {
 
           </div>
 
-          {/* Chatbot Demo - Main Feature - Mobile optimized */}
+          {/* LeftAI Demo - Main Feature - Mobile optimized */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -60,7 +60,7 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="text-neutral-600 text-xs text-center mt-6 pb-4"
           >
-            <p>Natural Language Crypto Transactions</p>
+            <p>© 2025 LeftAI</p>
           </motion.footer>
         </div>
       </div>

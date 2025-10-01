@@ -19,7 +19,7 @@ import {
 
 /**
  * Chat Interface Page
- * Interactive chat interface for Natural Language Transaction Engine
+ * Interactive chat interface for LeftAI
  * Dark theme matching the landing page design
  * Mobile-optimized for PWA experience
  */
@@ -28,7 +28,7 @@ export default function Chat() {
     {
       id: 1,
       type: "bot",
-      text: "👋 Hello! I'm your Natural Language Transaction assistant. Tell me what you'd like to do with your crypto.",
+      text: "👋 Hello! I'm your LeftAI assistant. Tell me what you'd like to do with your crypto.",
       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     }
   ]);
@@ -117,7 +117,7 @@ export default function Chat() {
             className="text-center mb-6"
           >
             <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
-              Natural Language Chat
+              LeftAI Chat
             </h1>
             <p className="text-xs md:text-sm text-neutral-400">
               Chat with AI to make crypto transactions

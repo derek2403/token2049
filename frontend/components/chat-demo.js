@@ -125,7 +125,7 @@ const allMessages = [
 
 /**
  * ChatDemo Component
- * Streaming chatbot demo showing Natural Language Transaction Engine
+ * Streaming chatbot demo showing LeftAI
  * Messages stream in one-by-one to demonstrate the flow
  * Optimized for mobile (iPhone 13 Pro Max) PWA
  */
