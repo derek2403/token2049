@@ -118,10 +118,11 @@ export function ChatDemo() {
     }
     
     // Only scroll after messages have started appearing
+    // Only trigger on messages change, not typingText to reduce lag
     if (hasStartedRef.current) {
       scrollToBottom();
     }
-  }, [messages, typingText]);
+  }, [messages]); // Removed typingText from dependencies
 
   // Stream messages one by one with typing effect
   useEffect(() => {
@@ -138,9 +139,8 @@ export function ChatDemo() {
         if (currentIndex > 0) {
           hasStartedRef.current = true;
         }
-        // User messages scroll instantly, others scroll smoothly
-        const isUserMessage = currentMessage.type === "user";
-        setTimeout(() => scrollToBottom(isUserMessage), 10);
+        // All messages scroll smoothly for better mobile performance
+        setTimeout(() => scrollToBottom(false), 10);
       }, currentIndex === 0 ? 400 : 600);
       
       return () => clearTimeout(timer);
@@ -161,8 +161,8 @@ export function ChatDemo() {
           if (charIndex <= fullText.length) {
             setTypingText(fullText.slice(0, charIndex));
             charIndex++;
-            // Scroll while typing to keep up with text
-            if (charIndex % 10 === 0) {
+            // Scroll less frequently while typing to reduce lag
+            if (charIndex % 20 === 0) {
               scrollToBottom();
             }
           } else {
@@ -173,7 +173,7 @@ export function ChatDemo() {
             setMessages(prev => [...prev, currentMessage]);
             setCurrentIndex(prev => prev + 1);
             // Scroll after message is complete
-            setTimeout(scrollToBottom, 50);
+            setTimeout(scrollToBottom, 100);
           }
         }, 25); // 25ms per character for faster typing
       }, extraDelay);
