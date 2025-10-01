@@ -30,7 +30,7 @@ const celoSepolia = defineChain({
     },
   },
   testnet: true,
-  iconUrl: 'https://celo.org/images/marketplace-icons/icon-celo.svg',
+  iconUrl: '/celo.png',
 });
 
 // Configure wallet connectors for RainbowKit
@@ -98,7 +98,7 @@ export function WalletProvider({ children }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
+        <RainbowKitProvider showTestnets={true}>
           <WalletProviderInner>{children}</WalletProviderInner>
         </RainbowKitProvider>
       </QueryClientProvider>
