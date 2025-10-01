@@ -38,9 +38,6 @@ export default function Home() {
               <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
                 Natural Language Transactions
               </h1>
-              <p className="text-xs md:text-sm text-neutral-400 max-w-2xl mx-auto">
-                Simply tell us what you want to do. We'll handle the blockchain complexity.
-              </p>
             </motion.div>
 
           </div>
