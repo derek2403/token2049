@@ -18,10 +18,9 @@ import {
   ArrowRight,
   AlertCircle
 } from "lucide-react";
-import { useAccount, useWriteContract, useSendTransaction, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
+import { useAccount, useWriteContract, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { availableFunctions, executeFunction } from "@/lib/llmActions";
 import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTransfer";
-import { executeStakeEth, getExplorerUrl as getStakeEthExplorerUrl } from "@/lib/llmActions/stakeEth";
 import { useContacts } from "@/hooks/useContacts";
 import { ContactAutocomplete } from "@/components/contact-autocomplete";
 import { usdToCelo, parseUsdAmount } from "@/lib/currencyUtils";
