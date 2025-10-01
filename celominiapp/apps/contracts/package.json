@@ -10,6 +10,7 @@
     "deploy": "hardhat ignition deploy ignition/modules/Lock.ts",
     "deploy:alfajores": "hardhat ignition deploy ignition/modules/Lock.ts --network alfajores",
     "deploy:celo": "hardhat ignition deploy ignition/modules/Lock.ts --network celo",
+    "deploy:yearn": "hardhat run scripts/deployYearnVault.ts --network celo",
     "verify": "hardhat verify",
     "clean": "hardhat clean",
     "typechain": "hardhat typechain"

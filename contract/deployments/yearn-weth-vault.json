@@ -1,0 +1,9 @@
+{
+  "vaultAddress": "CHECK_TRANSACTION_ON_CELOSCAN",
+  "wethAddress": "0xD221812de1BD094f35587EE8E174B07B6167D9Af",
+  "factoryAddress": "0x770D0d1Fb036483Ed4AbB6d53c1C88fb277D812F",
+  "deployer": "0x147151a144fEb00E1e173469B5f90C3B78ae210c",
+  "timestamp": "2025-10-01T21:04:01.586Z",
+  "network": "Celo Mainnet (42220)",
+  "transactionHash": "0x65fa1396c9af99648d815361a49319b15027492807658e2cf7808d5f4e93668e"
+}

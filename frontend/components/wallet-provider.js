@@ -1,36 +1,80 @@
 "use client";
 
-import { RainbowKitProvider, connectorsForWallets } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, connectorsForWallets, darkTheme } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
+import { 
+  injectedWallet,
+  metaMaskWallet,
+  walletConnectWallet,
+  trustWallet,
+  rainbowWallet
+} from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { WagmiProvider, createConfig, http, useConnect } from "wagmi";
 import { celo, celoAlfajores } from "wagmi/chains";
+import { defineChain } from "viem";
+
+// Define Celo Sepolia testnet (the new developer testnet replacing Alfajores)
+const celoSepolia = defineChain({
+  id: 11142220,
+  name: 'Celo Sepolia',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Celo',
+    symbol: 'CELO',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://forno.celo-sepolia.celo-testnet.org'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Celo Sepolia Blockscout',
+      url: 'https://celo-sepolia.blockscout.com',
+    },
+  },
+  testnet: true,
+  iconUrl: '/celo.png',
+});
 
 // Configure wallet connectors for RainbowKit
 // This sets up the available wallet options for users
+// Including mobile-friendly wallets that use WalletConnect
 const connectors = connectorsForWallets(
   [
     {
       groupName: "Recommended",
-      wallets: [injectedWallet],
+      wallets: [
+        metaMaskWallet,      // MetaMask - works on mobile via WalletConnect
+        walletConnectWallet, // Generic WalletConnect - supports many mobile wallets
+        injectedWallet,      // Browser wallets (desktop extensions)
+      ],
+    },
+    {
+      groupName: "More Options",
+      wallets: [
+        trustWallet,     // Trust Wallet (popular mobile wallet)
+        rainbowWallet,   // Rainbow Wallet
+      ],
     },
   ],
   {
-    appName: "Token2049",
+    appName: "LeftAI",
     projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "YOUR_PROJECT_ID",
   }
 );
 
 // Configure Wagmi with Celo networks
-// Supports both mainnet (celo) and testnet (celoAlfajores)
+// Supports mainnet (celo), old testnet (celoAlfajores), and new testnet (celoSepolia)
 const wagmiConfig = createConfig({
-  chains: [celo, celoAlfajores],
+  chains: [celo, celoAlfajores, celoSepolia],
   connectors,
   transports: {
     [celo.id]: http(),
     [celoAlfajores.id]: http(),
+    [celoSepolia.id]: http(),
   },
   ssr: true,
 });
@@ -72,7 +116,16 @@ export function WalletProvider({ children }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
+        <RainbowKitProvider
+          showTestnets={true}
+          theme={darkTheme({
+            accentColor: '#404040', // neutral-700 for consistency
+            accentColorForeground: 'white',
+            borderRadius: 'medium',
+            fontStack: 'system',
+            overlayBlur: 'small',
+          })}
+        >
           <WalletProviderInner>{children}</WalletProviderInner>
         </RainbowKitProvider>
       </QueryClientProvider>
