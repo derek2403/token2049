@@ -2,6 +2,7 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
 import { ChatDemo } from "@/components/chat-demo";
+import { AuroraText } from "@/components/ui/aurora-text";
 
 /**
  * LeftAI Landing Page
@@ -36,7 +37,7 @@ export default function Home() {
               className="text-center mb-4"
             >
               <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
-                Transfers made easy.
+                Transfers made <AuroraText colors={["#ffffff", "#a8dadc", "#ffffff", "#e0e0e0", "#ffffff"]} speed={1.5}>easy</AuroraText>.
               </h1>
             </motion.div>
 
