@@ -29,6 +29,82 @@ import { usdToUsdc, parseUsdAmount } from "@/lib/currencyUtils";
 import { useNotifications } from "@/components/notification-toast";
 
 /**
+ * Highlight Tagged Users and USD Amounts Component
+ * Parses text and highlights @mentions and $amounts
+ */
+function HighlightedText({ text }) {
+  // Combined pattern to match both @mentions and $amounts
+  const pattern = /(@[A-Za-z\s]+?)(?=\s|$|[^A-Za-z\s])|(\$\d+(?:\.\d+)?)/g;
+  
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  
+  while ((match = pattern.exec(text)) !== null) {
+    // Add text before match
+    if (match.index > lastIndex) {
+      parts.push({
+        type: 'text',
+        content: text.slice(lastIndex, match.index),
+      });
+    }
+    
+    // Add the matched part
+    if (match[1]) {
+      // @mention
+      parts.push({
+        type: 'mention',
+        content: match[1],
+      });
+    } else if (match[2]) {
+      // $amount
+      parts.push({
+        type: 'dollar',
+        content: match[2],
+      });
+    }
+    
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push({
+      type: 'text',
+      content: text.slice(lastIndex),
+    });
+  }
+  
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.type === 'mention') {
+          return (
+            <span
+              key={index}
+              className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 px-1.5 py-0.5 rounded-md font-medium"
+            >
+              {part.content}
+            </span>
+          );
+        } else if (part.type === 'dollar') {
+          return (
+            <span
+              key={index}
+              className="text-green-300 font-semibold underline decoration-green-300/50 underline-offset-2"
+            >
+              {part.content}
+            </span>
+          );
+        } else {
+          return <span key={index}>{part.content}</span>;
+        }
+      })}
+    </>
+  );
+}
+
+/**
  * Chat Interface Page
  * Interactive chat interface for LeftAI
  * Dark theme matching the landing page design
@@ -844,14 +920,16 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
           >
             <Card className="flex-1 flex flex-col bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg overflow-hidden min-h-0 relative">
               {/* Animated white border beam effect - faster on mobile (1.5x speed) */}
-              <BorderBeam 
-                size={200}
-                duration={isMobile ? 4 : 6}
-                delay={0}
-                colorFrom="#ffffff"
-                colorTo="#ffffff"
-                borderWidth={2}
-              />
+              <div className="absolute inset-0 pointer-events-none z-0">
+                <BorderBeam 
+                  size={200}
+                  duration={isMobile ? 4 : 6}
+                  delay={0}
+                  colorFrom="#ffffff"
+                  colorTo="#ffffff"
+                  borderWidth={2}
+                />
+              </div>
               
               {/* Messages Area - Scrollable within fixed container */}
               <ScrollArea className="flex-1 min-h-0">
@@ -868,7 +946,9 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
                         <div className="flex justify-end items-start gap-2">
                           <div className="max-w-[80%] md:max-w-[70%]">
                             <div className="bg-neutral-600 text-white rounded-2xl rounded-tr-md px-3 py-2 border border-neutral-500/30">
-                              <p className="text-sm">{message.text}</p>
+                              <p className="text-sm">
+                                <HighlightedText text={message.text} />
+                              </p>
                             </div>
                             <p className="text-xs text-neutral-500 mt-1 text-right">{message.timestamp}</p>
                           </div>
@@ -886,7 +966,9 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
                           </Avatar>
                           <div className="max-w-[80%] md:max-w-[70%]">
                             <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-3 py-2">
-                              <p className="text-sm">{message.text}</p>
+                              <p className="text-sm">
+                                <HighlightedText text={message.text} />
+                              </p>
                               
                               {/* Intent Details */}
                               {message.intent && (
@@ -1228,40 +1310,44 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
               </ScrollArea>
 
               {/* Quick Actions - Compact but clickable */}
-              <div className="px-3 py-2 border-t border-neutral-800 bg-neutral-900/30 flex-shrink-0">
+              <div className="px-3 py-2 border-t border-neutral-800 bg-neutral-900/30 flex-shrink-0 relative z-20">
                 <p className="text-xs text-neutral-500 text-center mb-1.5">Recent actions:</p>
                 <div className="flex gap-2 justify-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setInputValue("Send $0.01 to @Alice Johnson")}
-                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8"
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setInputValue("Send $0.01 to @Alice Johnson");
+                    }}
+                    className="bg-neutral-900/50 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8 rounded-md transition-colors cursor-pointer relative z-30"
                   >
                     Send USDC
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setInputValue("SI paid $60 for dinner with @Bob Smith and @Carol Lee, split it equally")}
-                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8"
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setInputValue("I paid $60 for dinner with @Bob Smith and @Carol Lee, split it equally");
+                    }}
+                    className="bg-neutral-900/50 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8 rounded-md transition-colors cursor-pointer relative z-30"
                   >
-                    Swap Tokens
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setInputValue("I have extra money to invest")}
-                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8"
+                    Split Bill
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setInputValue("I want to stake 10 CELO to earn rewards");
+                    }}
+                    className="bg-neutral-900/50 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8 rounded-md transition-colors cursor-pointer relative z-30"
                   >
-                    Earn Yields
-                  </Button>
+                    Stake CELO
+                  </button>
                 </div>
               </div>
 
               {/* Input Area - Bigger typing space */}
-              <div className="p-4 border-t border-neutral-800 bg-neutral-900/50 flex-shrink-0">
+              <div className="p-4 border-t border-neutral-800 bg-neutral-900/50 flex-shrink-0 relative z-20">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 relative">
+                    {/* Hidden input for actual text */}
                     <Input
                       ref={inputRef}
                       type="text"
@@ -1269,8 +1355,19 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
                       value={inputValue}
                       onChange={handleInputChange}
                       onKeyPress={handleKeyPress}
-                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full px-5 py-3 focus:ring-2 focus:ring-neutral-600 focus:border-transparent text-base h-12"
+                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full px-5 py-3 focus:ring-2 focus:ring-neutral-600 focus:border-transparent text-base h-12 relative z-10"
+                      style={{ caretColor: 'white' }}
                     />
+                    
+                    {/* Highlighted overlay showing formatted text */}
+                    {inputValue && (
+                      <div className="absolute inset-0 pointer-events-none px-5 py-3 rounded-full flex items-center overflow-hidden">
+                        <div className="text-base text-transparent select-none">
+                          <HighlightedText text={inputValue} />
+                        </div>
+                      </div>
+                    )}
+                    
                     {/* Contact Autocomplete Dropdown */}
                     {showContactDropdown && (
                       <ContactAutocomplete
@@ -1281,9 +1378,12 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
                     )}
                   </div>
                   <Button
-                    onClick={handleSendMessage}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSendMessage();
+                    }}
                     disabled={!inputValue.trim()}
-                    className="bg-neutral-700 hover:bg-neutral-600 text-white rounded-full h-12 w-12 p-0 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    className="bg-neutral-700 hover:bg-neutral-600 text-white rounded-full h-12 w-12 p-0 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 relative z-30"
                   >
                     <Send className="h-5 w-5 text-white" />
                   </Button>
