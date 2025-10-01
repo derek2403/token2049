@@ -25,7 +25,7 @@ import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTr
 import { executeStakeCelo, getExplorerUrl as getStakeExplorerUrl } from "@/lib/llmActions/stakeCelo";
 import { useContacts } from "@/hooks/useContacts";
 import { ContactAutocomplete } from "@/components/contact-autocomplete";
-import { usdToCelo, parseUsdAmount } from "@/lib/currencyUtils";
+import { usdToUsdc, parseUsdAmount } from "@/lib/currencyUtils";
 import { useNotifications } from "@/components/notification-toast";
 
 /**
@@ -195,20 +195,20 @@ export default function Chat() {
       }
     }
 
-    // Extract USD amounts ($100) and convert to CELO
+    // Extract USD amounts ($100) and convert to USDC (1:1)
     const usdRegex = /\$(\d+(?:\.\d+)?)/g;
     const usdMatches = [...inputValue.matchAll(usdRegex)];
     
     for (const match of usdMatches) {
       const usdAmount = parseUsdAmount(match[0]);
       if (usdAmount) {
-        const celoAmount = await usdToCelo(usdAmount);
+        const usdcAmount = await usdToUsdc(usdAmount);
         replacements.push({
           original: match[0],
-          replacement: `${celoAmount} CELO`,
+          replacement: `${usdcAmount} USDC`,
           type: 'usd',
           usdAmount,
-          celoAmount,
+          usdcAmount,
         });
       }
     }
@@ -258,18 +258,19 @@ ${isConnected ? `The user's wallet is connected: ${userAddress}` : 'The user has
 
 IMPORTANT FEATURES:
 - Users can type @ to select contacts by name (frontend handles conversion to wallet address)
-- Users can type $ for USD amounts (frontend auto-converts to CELO)
-- All transfers use CELO token by default
+- Users can type $ for USD amounts (frontend auto-converts to USDC at 1:1 ratio)
 - You will receive wallet addresses (not contact names) in the processed input
-- When parsing amounts, look for patterns like "30 CELO" or just numbers near addresses
+- When parsing amounts, look for patterns like "30 USDC" or "50 CELO"
 
 AVAILABLE FUNCTIONS:
 
 1. TRANSFER FUNDS - When the user wants to send/transfer money TO someone:
-{"name": "transfer_funds", "arguments": {"destinationAddress": "0x...", "amount": "number", "tokenSymbol": "CELO"}}
+{"name": "transfer_funds", "arguments": {"destinationAddress": "0x...", "amount": "number", "tokenSymbol": "USDC"}}
+Note: $ amounts convert to USDC (1:1). For CELO, user must specify "CELO" explicitly.
 
 2. REQUEST PAYMENT - When the user wants to REQUEST money FROM someone(s), split bills, or ask for payment:
-{"name": "request_payment", "arguments": {"fromAddresses": ["0x...", "0x..."], "totalAmount": "number", "tokenSymbol": "CELO", "description": "optional text"}}
+{"name": "request_payment", "arguments": {"fromAddresses": ["0x...", "0x..."], "totalAmount": "number", "tokenSymbol": "USDC", "description": "optional text"}}
+Note: $ amounts convert to USDC (1:1).
 
 3. STAKE CELO - When the user wants to stake/save CELO, earn rewards, earn yield, passive income:
 {"name": "stake_celo", "arguments": {"amount": "number"}}

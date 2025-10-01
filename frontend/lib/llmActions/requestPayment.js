@@ -33,8 +33,8 @@ export const requestPaymentFunction = {
       },
       tokenSymbol: {
         type: "string",
-        description: "The token symbol for the payment request (e.g., 'CELO', 'cUSD', 'cEUR'). Default is 'cUSD'.",
-        enum: ["CELO", "cUSD", "cEUR"],
+        description: "The token symbol for the payment request (e.g., 'USDC', 'CELO', 'cUSD', 'cEUR'). Default is 'USDC'.",
+        enum: ["USDC", "CELO", "cUSD", "cEUR"],
       },
       description: {
         type: "string",
@@ -105,8 +105,8 @@ function validateRequestParams({ fromAddresses, totalAmount, individualAmounts, 
   }
   
   // Validate token symbol
-  if (!["CELO", "cUSD", "cEUR"].includes(tokenSymbol)) {
-    errors.push("Invalid token symbol. Must be CELO, cUSD, or cEUR");
+  if (!["USDC", "CELO", "cUSD", "cEUR"].includes(tokenSymbol)) {
+    errors.push("Invalid token symbol. Must be USDC, CELO, cUSD, or cEUR");
   }
   
   return {

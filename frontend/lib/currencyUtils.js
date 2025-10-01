@@ -1,29 +1,29 @@
 /**
  * Currency Utilities
- * Simple 1:1 conversion - $1 = 1 CELO
+ * Simple 1:1 conversion - $1 = 1 USDC
  */
 
 /**
- * Convert USD amount to CELO (1:1 ratio)
- * $1 = 1 CELO
+ * Convert USD amount to USDC (1:1 ratio)
+ * $1 = 1 USDC
  */
-export async function usdToCelo(usdAmount) {
+export async function usdToUsdc(usdAmount) {
   const amount = parseFloat(usdAmount);
   if (isNaN(amount) || amount <= 0) return "0";
   
-  // 1:1 conversion - $1 = 1 CELO
+  // 1:1 conversion - $1 = 1 USDC
   return amount.toString();
 }
 
 /**
- * Convert CELO amount to USD (1:1 ratio)
- * 1 CELO = $1
+ * Convert USDC amount to USD (1:1 ratio)
+ * 1 USDC = $1
  */
-export async function celoToUsd(celoAmount) {
-  const amount = parseFloat(celoAmount);
+export async function usdcToUsd(usdcAmount) {
+  const amount = parseFloat(usdcAmount);
   if (isNaN(amount) || amount <= 0) return "0";
   
-  // 1:1 conversion - 1 CELO = $1
+  // 1:1 conversion - 1 USDC = $1
   return amount.toFixed(2);
 }
 
