@@ -13,45 +13,65 @@ const allMessages = [
     {
       id: 1,
       type: "user",
-      text: "Send 100 cUSD to my brother",
+      text: "Send 100 cUSD to @derek eth",
       timestamp: "2:34 PM",
     },
     {
       id: 3,
       type: "bot",
-      text: "I'll help you send 100 cUSD. Let me prepare the transaction.",
+      text: "I'll help you send 100 cUSD to +6016xxxx101. Let me prepare the transaction.",
       timestamp: "2:34 PM",
       intent: {
         action: "Send",
         amount: "100 cUSD",
         recipient: "0x742d...4f2a",
         estimatedFee: "0.001 CELO",
+        txId: "0x8a3f...91c2",
       },
     },
     {
       id: 5,
       type: "user",
-      text: "Swap my CELO for the best price on Ubeswap",
+      text: "Request 5 cUSD from @James ETHGlobal",
       timestamp: "2:35 PM",
     },
     {
       id: 6,
       type: "bot",
-      text: "Found best rate on Ubeswap. Ready to swap your CELO.",
+      text: "Payment request sent to James ETHGlobal. He'll receive a notification to approve your request.",
       timestamp: "2:35 PM",
       intent: {
-        action: "Swap",
-        from: "5 CELO",
-        to: "~425 cUSD",
-        route: "Ubeswap",
-      slippage: "0.5%",
-    },
+        action: "Request Payment",
+        amount: "5 cUSD",
+        from: "James ETHGlobal",
+        status: "Pending Approval",
+        txId: "0x2b7e...45d9",
+      },
   },
   {
     id: 7,
     type: "bot",
+    text: "✅ Payment completed! James ETHGlobal has approved and sent you 5 cUSD.",
+    timestamp: "2:36 PM",
+      intent: {
+        action: "Payment Received",
+        amount: "5 cUSD",
+        from: "James ETHGlobal",
+        status: "Completed",
+        txId: "0x2b7e...45d9",
+      },
+  },
+  {
+    id: 8,
+    type: "user",
+    text: "This is amazing! How can I try this out?",
+    timestamp: "2:36 PM",
+  },
+  {
+    id: 9,
+    type: "bot",
     text: "Ready to make your own transactions? Click here to try it out!",
-    timestamp: "2:35 PM",
+    timestamp: "2:36 PM",
   },
 ];
 
@@ -122,15 +142,15 @@ export function ChatDemo() {
         }
         // All messages scroll smoothly for better mobile performance
         setTimeout(() => scrollToBottom(false), 10);
-      }, currentIndex === 0 ? 400 : 600);
+      }, currentIndex === 0 ? 700 : 600); // Added 500ms delay to first message
       
       return () => clearTimeout(timer);
     }
     
     // Bot messages type letter by letter
     if (currentMessage.type === "bot") {
-      // Add extra delay for the last message (id: 7)
-      const extraDelay = currentMessage.id === 7 ? 300 : 0;
+      // Add extra delay for all bot messages
+      const extraDelay = 300;
       
       const delayTimer = setTimeout(() => {
         setIsTyping(true);
@@ -206,7 +226,7 @@ export function ChatDemo() {
                 <div className="flex justify-start">
                   <div className="max-w-[85%]">
                     {/* Clickable CTA message for the last message */}
-                    {message.id === 7 ? (
+                    {message.id === 9 ? (
                       <div>
                         <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
                           <p className="text-sm mb-3">{message.text}</p>
@@ -274,6 +294,18 @@ export function ChatDemo() {
                               <span className="text-neutral-300">{message.intent.slippage}</span>
                             </div>
                           )}
+                          {message.intent.status && (
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-neutral-400">Status</span>
+                              <span className="text-white font-medium">{message.intent.status}</span>
+                            </div>
+                          )}
+                          {message.intent.txId && (
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-neutral-400">Transaction ID</span>
+                              <span className="text-blue-400 font-mono text-[10px]">{message.intent.txId}</span>
+                            </div>
+                          )}
                           </div>
                         )}
                       </div>
@@ -306,7 +338,7 @@ export function ChatDemo() {
               <div className="flex justify-start">
                 <div className="max-w-[85%]">
                   {/* Show clickable style for last message while typing */}
-                  {typingMessageId === 7 ? (
+                  {typingMessageId === 9 ? (
                     <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
                       <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
                     </div>
