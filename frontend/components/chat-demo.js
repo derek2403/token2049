@@ -61,7 +61,7 @@ const allMessages = [
     {
       id: 3,
       type: "bot",
-      text: "I'll help you send 100 cUSD to derek eth. Let me prepare the transaction.",
+      text: "I'll help you send 100 cUSD to @derek eth. Let me prepare the transaction.",
       timestamp: "2:34 PM",
       intent: {
         action: "Send",
@@ -80,7 +80,7 @@ const allMessages = [
     {
       id: 6,
       type: "bot",
-      text: "Payment request sent to James ETHGlobal. He'll receive a notification to approve your request.",
+      text: "Payment request sent to @James ETHGlobal. He'll receive a notification to approve your request.",
       timestamp: "2:35 PM",
       intent: {
         action: "Request Payment",
@@ -93,7 +93,7 @@ const allMessages = [
   {
     id: 7,
     type: "bot",
-    text: "✅ Payment completed! James ETHGlobal has approved and sent you 5 cUSD.",
+    text: "✅ Payment completed! @James ETHGlobal has approved and sent you 5 cUSD.",
     timestamp: "2:36 PM",
       intent: {
         action: "Payment Received",
@@ -112,7 +112,7 @@ const allMessages = [
   {
     id: 9,
     type: "bot",
-    text: "Ready to make your own transactions? Click here to try it out!",
+    text: "Ready to make your own transactions?",
     timestamp: "2:36 PM",
   },
 ];
@@ -278,7 +278,7 @@ export function ChatDemo() {
                             <PulsatingButton 
                               pulseColor="rgba(255, 255, 255, 0.3)"
                               duration="2s"
-                              className="w-full bg-white hover:bg-gray-100 text-black transition-colors font-medium"
+                              className="w-full bg-white hover:bg-gray-100 text-black transition-colors font-bold"
                             >
                               Try it Now →
                             </PulsatingButton>
