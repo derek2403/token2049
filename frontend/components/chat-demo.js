@@ -5,15 +5,8 @@ import { CheckCircle2, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 
-/**
- * ChatDemo Component
- * Streaming chatbot demo showing Natural Language Transaction Engine
- * Messages stream in one-by-one to demonstrate the flow
- * Optimized for mobile (iPhone 13 Pro Max) PWA
- */
-export function ChatDemo() {
-  // All messages in the conversation
-  const allMessages = [
+// All messages in the conversation - defined outside component to prevent re-creation
+const allMessages = [
     {
       id: 1,
       type: "user",
@@ -67,14 +60,23 @@ export function ChatDemo() {
         from: "5 CELO",
         to: "~425 cUSD",
         route: "Ubeswap",
-        slippage: "0.5%",
-      },
+      slippage: "0.5%",
     },
-  ];
+  },
+];
 
+/**
+ * ChatDemo Component
+ * Streaming chatbot demo showing Natural Language Transaction Engine
+ * Messages stream in one-by-one to demonstrate the flow
+ * Optimized for mobile (iPhone 13 Pro Max) PWA
+ */
+export function ChatDemo() {
   // State for streaming messages
   const [messages, setMessages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [typingText, setTypingText] = useState(""); // Current text being typed
+  const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -85,19 +87,46 @@ export function ChatDemo() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, typingText]);
 
-  // Stream messages one by one
+  // Stream messages one by one with typing effect
   useEffect(() => {
-    if (currentIndex < allMessages.length) {
-      const timer = setTimeout(() => {
-        setMessages(prev => [...prev, allMessages[currentIndex]]);
-        setCurrentIndex(prev => prev + 1);
-      }, currentIndex === 0 ? 500 : 1500); // First message after 500ms, rest after 1500ms
+    if (currentIndex >= allMessages.length) return;
 
+    const currentMessage = allMessages[currentIndex];
+    
+    // User messages and system messages appear instantly
+    if (currentMessage.type === "user" || currentMessage.type === "system" || currentMessage.type === "attestation") {
+      const timer = setTimeout(() => {
+        setMessages(prev => [...prev, currentMessage]);
+        setCurrentIndex(prev => prev + 1);
+      }, currentIndex === 0 ? 500 : 800);
+      
       return () => clearTimeout(timer);
     }
-  }, [currentIndex]);
+    
+    // Bot messages type letter by letter
+    if (currentMessage.type === "bot") {
+      setIsTyping(true);
+      const fullText = currentMessage.text;
+      let charIndex = 0;
+      
+      const typeTimer = setInterval(() => {
+        if (charIndex <= fullText.length) {
+          setTypingText(fullText.slice(0, charIndex));
+          charIndex++;
+        } else {
+          clearInterval(typeTimer);
+          setIsTyping(false);
+          setTypingText("");
+          setMessages(prev => [...prev, currentMessage]);
+          setCurrentIndex(prev => prev + 1);
+        }
+      }, 30); // 30ms per character for smooth typing
+      
+      return () => clearInterval(typeTimer);
+    }
+  }, [currentIndex]); // Removed allMessages from deps since it's now constant
 
   return (
     <Card className="w-full max-w-md mx-auto bg-neutral-900/90 border-neutral-800 backdrop-blur-lg">
@@ -218,6 +247,24 @@ export function ChatDemo() {
               )}
             </motion.div>
           ))}
+          
+          {/* Typing indicator for bot messages */}
+          {isTyping && typingText && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex justify-start">
+                <div className="max-w-[85%]">
+                  <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
+                    <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+          
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
