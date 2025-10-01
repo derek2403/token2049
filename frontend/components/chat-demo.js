@@ -17,13 +17,6 @@ const allMessages = [
       timestamp: "2:34 PM",
     },
     {
-      id: 2,
-      type: "system",
-      text: "Processing your request...",
-      timestamp: "2:34 PM",
-      status: "processing",
-    },
-    {
       id: 3,
       type: "bot",
       text: "I'll help you send 100 cUSD. Let me prepare the transaction.",
