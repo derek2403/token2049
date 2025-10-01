@@ -14,8 +14,13 @@ import {
   Clock, 
   Bot, 
   User,
-  Sparkles
+  Sparkles,
+  ArrowRight,
+  AlertCircle
 } from "lucide-react";
+import { useAccount, useWriteContract, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
+import { availableFunctions, executeFunction } from "@/lib/llmActions";
+import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTransfer";
 
 /**
  * Chat Interface Page
@@ -24,19 +29,30 @@ import {
  * Mobile-optimized for PWA experience
  */
 export default function Chat() {
+  const { address: userAddress, isConnected, chain } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+  const { sendTransactionAsync } = useSendTransaction();
+  
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: "bot",
-      text: "👋 Hello! I'm your Natural Language Transaction assistant. Tell me what you'd like to do with your crypto.",
+      text: "👋 Hello! I'm your AI-powered Natural Language Transaction assistant, running on Phala's confidential computing network. Tell me what you'd like to do with your crypto, and I'll help you execute transactions securely on Celo.",
       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     }
   ]);
   
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState([]);
+  const [pendingTxHash, setPendingTxHash] = useState(null);
   const scrollAreaRef = useRef(null);
   const messagesEndRef = useRef(null);
+  
+  // Watch for transaction confirmation
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash: pendingTxHash,
+  });
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -46,6 +62,27 @@ export default function Chat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Handle transaction confirmation
+  useEffect(() => {
+    if (isConfirmed && pendingTxHash) {
+      const explorerUrl = getExplorerUrl(chain?.id || 44787, pendingTxHash);
+      
+      const successMessage = {
+        id: Date.now(),
+        type: "attestation",
+        text: "Transfer completed successfully!",
+        details: [
+          `Transaction confirmed on blockchain`,
+          `View on explorer: ${explorerUrl}`,
+        ],
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+      
+      setMessages(prev => [...prev, successMessage]);
+      setPendingTxHash(null);
+    }
+  }, [isConfirmed, pendingTxHash, chain?.id]);
 
   // Handle sending messages
   const handleSendMessage = async () => {
@@ -59,24 +96,168 @@ export default function Chat() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate bot response after a delay
-    setTimeout(() => {
-      const botResponse = {
+    try {
+      // Build conversation history
+      const newHistory = [
+        ...conversationHistory,
+        { role: "user", content: currentInput }
+      ];
+
+      // Prepare messages for RedPill API (OpenAI format)
+      const systemPrompt = `You are a helpful AI assistant for crypto transactions on the Celo blockchain. 
+Help users understand and execute their crypto transactions using natural language. 
+Be concise, friendly, and security-conscious.
+
+${isConnected ? `The user's wallet is connected: ${userAddress}` : 'The user has not connected their wallet yet. Remind them to connect their wallet to perform transactions.'}
+
+Available tokens: CELO, cUSD, cEUR
+
+IMPORTANT: When the user wants to transfer funds and you have all required information (destination address, amount, and token), respond with ONLY this JSON format:
+{"name": "transfer_funds", "arguments": {"destinationAddress": "0x...", "amount": "number", "tokenSymbol": "CELO|cUSD|cEUR"}}
+
+If any information is missing, ask the user for it in natural language. Only output the JSON when you have ALL three required parameters.
+
+Examples:
+User: "Send 100 cUSD to 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+You: {"name": "transfer_funds", "arguments": {"destinationAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb", "amount": "100", "tokenSymbol": "cUSD"}}
+
+User: "Send 50 CELO"
+You: To complete the transfer, I need to know the destination address. Where would you like to send the 50 CELO?`;
+
+      const apiMessages = [
+        { role: "system", content: systemPrompt },
+        ...newHistory.slice(-10), // Keep last 10 exchanges for context
+      ];
+
+      // Call our API route (without native function calling, using JSON in text instead)
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          messages: apiMessages,
+          // Don't send functions to RedPill API - it might not support it
+          // Instead, we instruct the AI via system prompt to output JSON
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+
+      const data = await response.json();
+      
+      // Handle function call
+      if (data.type === 'function_call') {
+        await handleFunctionCall(data.function_call, newHistory);
+      } 
+      // Handle regular message
+      else if (data.type === 'message') {
+        const botResponse = {
+          id: messages.length + 2,
+          type: "bot",
+          text: data.message,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        
+        setMessages(prev => [...prev, botResponse]);
+        setConversationHistory([
+          ...newHistory,
+          { role: "assistant", content: data.message }
+        ]);
+      }
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // Error message
+      const errorMessage = {
         id: messages.length + 2,
         type: "bot",
-        text: "I understand you want to make a transaction. Let me help you with that.",
+        text: "Sorry, I'm having trouble connecting to the AI service. Please try again.",
         timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        intent: {
-          action: "Analyzing request...",
-          status: "processing"
-        }
       };
-      setMessages(prev => [...prev, botResponse]);
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
+  };
+
+  // Handle function calls from the AI
+  const handleFunctionCall = async (functionCall, currentHistory) => {
+    const { name: functionName, arguments: argsString } = functionCall;
+    
+    try {
+      // Parse function arguments
+      const args = JSON.parse(argsString);
+      
+      // Execute the function
+      const result = executeFunction(functionName, args, userAddress);
+      
+      // Handle the result
+      if (result.success) {
+        // Show confirmation message with transfer details
+        const confirmMessage = {
+          id: messages.length + 2,
+          type: "action",
+          text: result.message,
+          action: {
+            type: result.type,
+            data: result,
+            args: args, // Store args for execution
+          },
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        
+        setMessages(prev => [...prev, confirmMessage]);
+        
+        // Update conversation history with function result
+        setConversationHistory([
+          ...currentHistory,
+          { role: "assistant", content: null, function_call: functionCall },
+          { role: "function", name: functionName, content: JSON.stringify(result) }
+        ]);
+      } else {
+        // Show error or ask for missing parameters
+        const errorText = result.missing && result.missing.length > 0
+          ? `I need some more information. ${result.error}`
+          : result.error;
+        
+        const errorMessage = {
+          id: messages.length + 2,
+          type: "bot",
+          text: errorText,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        
+        setMessages(prev => [...prev, errorMessage]);
+        
+        // Send error back to AI for follow-up
+        setConversationHistory([
+          ...currentHistory,
+          { role: "assistant", content: null, function_call: functionCall },
+          { role: "function", name: functionName, content: JSON.stringify(result) }
+        ]);
+      }
+      
+    } catch (error) {
+      console.error('Error executing function:', error);
+      
+      const errorMessage = {
+        id: messages.length + 2,
+        type: "bot",
+        text: "Sorry, I encountered an error processing your request. Please try again.",
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    }
   };
 
   // Handle Enter key press
@@ -84,6 +265,78 @@ export default function Chat() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  // Handle transaction execution
+  const handleExecuteTransfer = async (transferData) => {
+    const { destinationAddress, amount, tokenSymbol } = transferData;
+    
+    // Show processing message
+    const processingMessage = {
+      id: Date.now(),
+      type: "system",
+      text: "Processing transaction... Please confirm in your wallet.",
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    };
+    setMessages(prev => [...prev, processingMessage]);
+    
+    try {
+      const result = await executeTokenTransfer({
+        destinationAddress,
+        amount,
+        tokenSymbol,
+        writeContract: writeContractAsync,
+        sendTransaction: sendTransactionAsync,
+        chainId: chain?.id || 44787,
+        userAddress,
+      });
+      
+      if (result.success) {
+        setPendingTxHash(result.hash);
+        
+        const explorerUrl = getExplorerUrl(chain?.id || 44787, result.hash);
+        
+        const pendingMessage = {
+          id: Date.now() + 1,
+          type: "system",
+          text: `Transaction submitted! Waiting for confirmation...`,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, pendingMessage]);
+        
+        // Add a clickable link message
+        const linkMessage = {
+          id: Date.now() + 2,
+          type: "bot",
+          text: `View transaction: ${explorerUrl}`,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, linkMessage]);
+        
+      } else {
+        // Handle error
+        const errorMessage = {
+          id: Date.now() + 1,
+          type: "bot",
+          text: result.userRejected 
+            ? "Transaction was cancelled. Let me know if you'd like to try again!"
+            : `Transaction failed: ${result.error}`,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
+      
+    } catch (error) {
+      console.error('Transaction execution error:', error);
+      
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: "bot",
+        text: "Sorry, there was an error executing the transaction. Please try again.",
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages(prev => [...prev, errorMessage]);
     }
   };
 
@@ -205,6 +458,67 @@ export default function Chat() {
                                   ))}
                                 </div>
                               )}
+                            </div>
+                            <p className="text-xs text-neutral-500 mt-1">{message.timestamp}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Messages (Transfer Confirmation) */}
+                      {message.type === "action" && message.action?.type === "transfer_funds" && (
+                        <div className="flex justify-start items-start gap-2">
+                          <Avatar className="h-8 w-8 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                            <ArrowRight className="h-4 w-4 text-white" />
+                          </Avatar>
+                          <div className="max-w-[80%] md:max-w-[70%]">
+                            <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-2xl rounded-tl-md px-4 py-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <AlertCircle className="h-4 w-4 text-white" />
+                                <p className="text-sm text-purple-300 font-medium">Transfer Confirmation Required</p>
+                              </div>
+                              
+                              <div className="space-y-2 text-xs text-neutral-300 mb-3">
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">From:</span>
+                                  <span className="font-mono">{message.action.data.userAddress?.substring(0, 10)}...</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">To:</span>
+                                  <span className="font-mono">{message.action.data.destinationAddress?.substring(0, 10)}...</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">Amount:</span>
+                                  <span className="font-medium text-white">{message.action.data.amount} {message.action.data.tokenSymbol}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs"
+                                  disabled={isConfirming}
+                                  onClick={() => handleExecuteTransfer(message.action.args)}
+                                >
+                                  {isConfirming ? 'Confirming...' : 'Confirm Transfer'}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700 text-xs"
+                                  disabled={isConfirming}
+                                  onClick={() => {
+                                    const cancelMsg = {
+                                      id: messages.length + 1,
+                                      type: "bot",
+                                      text: "Transfer cancelled. How else can I help you?",
+                                      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                                    };
+                                    setMessages(prev => [...prev, cancelMsg]);
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
                             </div>
                             <p className="text-xs text-neutral-500 mt-1">{message.timestamp}</p>
                           </div>
