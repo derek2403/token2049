@@ -29,20 +29,12 @@ NEXT_PUBLIC_WC_PROJECT_ID=your_project_id_here
    - Displays wallet connection button
    - Hides automatically when running in MiniPay (which auto-connects)
 
-### 3. **User Balance** (`components/user-balance.js`)
-   - Shows connected wallet address
-   - Displays balances for:
-     - CELO (native token)
-     - cUSD (Celo Dollar)
-     - USDC (USD Coin)
-     - USDT (Tether)
-
-### 4. **Navbar** (`components/navbar.js`)
+### 3. **Navbar** (`components/navbar.js`)
    - Sticky navigation bar with wallet integration
    - Responsive mobile menu
-   - Navigation links for Home, Events, and My Tickets
+   - Navigation links for Home and Chat
 
-### 5. **UI Components**
+### 4. **UI Components**
    - `button.js` - Reusable button component with multiple variants
    - `card.js` - Card container for displaying grouped content
    - `sheet.js` - Slide-in panel for mobile menu

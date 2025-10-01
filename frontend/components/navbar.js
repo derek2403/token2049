@@ -17,7 +17,6 @@ import { ConnectButton } from "@/components/connect-button"
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Chat", href: "/chat" },
-  { name: "Balance", href: "/balance" },
 ]
 
 /**

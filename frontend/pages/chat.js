@@ -293,14 +293,6 @@ export default function Chat() {
               >
                 Swap Tokens
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setInputValue("Check my balance")}
-                className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
-              >
-                Check Balance
-              </Button>
             </div>
           </motion.div>
         </div>
