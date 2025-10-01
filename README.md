@@ -1,12 +1,14 @@
 # LeftAI
 
-**Natural Language Crypto Transactions on Celo**
+**Natural Language Crypto Transactions on Celo MiniPay**
 
-**Simplifying blockchain interactions: AI-powered transaction assistant with conversational interface**
+**AI-powered transaction assistant built as a Celo MiniPay app with conversational interface**
 
 ![LeftAI Landing Page](./frontend/public/landingpage.png)
 
 Check out the live demo of **LeftAI**: 👉 [Click here to try it out](https://token2049-two.vercel.app/)
+
+> **📱 MiniPay Ready:** This app is optimized for Celo MiniPay! Open the link in MiniPay browser for the best mobile experience.
 
 ## Demo Video
 [🎥 Watch Demo Video](#)
@@ -23,7 +25,7 @@ We noticed that blockchain transactions are still too complex for mainstream ado
 
 That question sparked LeftAI. By combining natural language processing with AI function calling (powered by Phala's confidential computing network), contact management, and smart contract automation, we created an interface where anyone can execute crypto transactions as easily as sending a text message.
 
-This exploration led us to design LeftAI as a responsive PWA optimized for mobile, that:
+This exploration led us to build LeftAI as a **Celo MiniPay app** - a mobile-first, PWA-optimized application that:
 
 - **Understands natural language commands** using RedPill AI (Phala Network)
 - **Resolves contacts automatically** with @mentions (like Twitter/Slack)
@@ -32,7 +34,7 @@ This exploration led us to design LeftAI as a responsive PWA optimized for mobil
 - **Enables CELO staking** through custom smart contracts
 - **Executes transactions securely** with MetaMask integration
 - **Provides real-time feedback** with explorer links and confirmations
-- **Works on any device** with full PWA support
+- **Works seamlessly on mobile** as a MiniPay-integrated PWA
 
 ## Features ✨
 
@@ -175,8 +177,9 @@ npm run deploy:staking
 
 ### Blockchain & Web3
 - **Celo** - Layer 1 blockchain
+- **Celo MiniPay** - Mobile wallet integration
 - **USDC** - Primary stablecoin
-- **MetaMask** - Wallet provider
+- **RainbowKit** - Multi-wallet support (MiniPay, MetaMask, etc.)
 - **ERC-4626** - Vault standard
 
 ## Smart Contracts 📜
@@ -320,12 +323,18 @@ token2049/
 
 ## Deployment 🚢
 
-### Frontend (Vercel)
+### Frontend (Vercel as MiniPay App)
 ```bash
 cd frontend
 npm run build
 # Deploy to Vercel
+# Access via MiniPay browser or any mobile device
 ```
+
+**MiniPay Integration:**
+- App is optimized for Celo MiniPay mobile wallet
+- Works as a Progressive Web App (PWA)
+- Supports MiniPay wallet alongside MetaMask and other Web3 wallets
 
 ### Smart Contracts (Celo Mainnet)
 ```bash
@@ -333,13 +342,3 @@ cd contract
 # Add PRIVATE_KEY to .env
 npm run deploy:staking
 ```
-
-## Security Considerations 🔐
-
-- ✅ **API Keys Server-Side**: All API keys stored in `.env.local` (never exposed to client)
-- ✅ **User Confirmation**: All transactions require MetaMask approval
-- ✅ **Parameter Validation**: Input validation before blockchain execution
-- ✅ **Confidential AI**: RedPill runs on Phala's TEE (Trusted Execution Environment)
-- ✅ **Open Source Contracts**: Fully auditable smart contracts
-- ✅ **Non-Custodial**: Users maintain full control of their funds
-
