@@ -84,7 +84,8 @@ export function ChatDemo() {
   const initialRenderRef = useRef(true); // Track initial render
 
   // Smooth scroll function - scrolls the chat to bottom
-  const scrollToBottom = useCallback(() => {
+  // instant: true for immediate scroll (user messages), false for smooth (bot messages)
+  const scrollToBottom = useCallback((instant = false) => {
     if (scrollAreaRef.current) {
       // Use requestAnimationFrame for smoother, faster scrolling
       requestAnimationFrame(() => {
@@ -92,7 +93,7 @@ export function ChatDemo() {
         if (viewport) {
           viewport.scrollTo({
             top: viewport.scrollHeight,
-            behavior: 'smooth'
+            behavior: instant ? 'auto' : 'smooth'
           });
         }
       });
@@ -128,8 +129,9 @@ export function ChatDemo() {
         if (currentIndex > 0) {
           hasStartedRef.current = true;
         }
-        // Scroll immediately after adding message
-        setTimeout(scrollToBottom, 50);
+        // User messages scroll instantly, others scroll smoothly
+        const isUserMessage = currentMessage.type === "user";
+        setTimeout(() => scrollToBottom(isUserMessage), 10);
       }, currentIndex === 0 ? 400 : 600);
       
       return () => clearTimeout(timer);
