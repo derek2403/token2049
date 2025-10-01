@@ -133,3 +133,35 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Aceternity UI Spotlight Animation */
+@keyframes spotlight {
+  0% {
+    opacity: 0;
+    transform: translate(-72%, -62%) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -40%) scale(1);
+  }
+}
+
+.animate-spotlight {
+  animation: spotlight 2s ease 0.75s 1 forwards;
+}
+
+/* Dot pattern backgrounds for Aceternity UI */
+.bg-dot-thick-neutral-300 {
+  background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dark .bg-dot-thick-neutral-800 {
+  background-image: radial-gradient(circle, #262626 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-dot-thick-indigo-500 {
+  background-image: radial-gradient(circle, #6366f1 1px, transparent 1px);
+  background-size: 20px 20px;
+}
