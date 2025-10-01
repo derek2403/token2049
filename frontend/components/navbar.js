@@ -113,9 +113,32 @@ export function Navbar() {
     }
   }
   
+  // Generate a random name based on wallet address
+  // Same wallet will always get the same name
+  const generateRandomName = (walletAddress) => {
+    if (!walletAddress) return "Guest User"
+    
+    const firstNames = [
+      "Alex", "Jordan", "Taylor", "Morgan", "Casey", "Riley", "Avery", "Quinn",
+      "Dakota", "Sage", "Phoenix", "River", "Skyler", "Cameron", "Logan", "Parker"
+    ]
+    
+    const lastNames = [
+      "Chen", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Martinez",
+      "Davis", "Rodriguez", "Miller", "Wilson", "Moore", "Taylor", "Anderson", "Thomas"
+    ]
+    
+    // Use wallet address to generate consistent index
+    const addressSum = walletAddress.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)
+    const firstNameIndex = addressSum % firstNames.length
+    const lastNameIndex = (addressSum * 7) % lastNames.length // Multiply by prime for variation
+    
+    return `${firstNames[firstNameIndex]} ${lastNames[lastNameIndex]}`
+  }
+  
   // Prepare user data with actual wallet info
   const userData = {
-    name: chainId === 42220 ? "Celo Mainnet" : "Celo Alfajores",
+    name: generateRandomName(address),
     phone: "+1 (234) 567-8900", // You can make this editable or remove it
     address: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Not connected",
     fullAddress: address || "",
