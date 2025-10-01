@@ -3,6 +3,8 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
+    "deploy:staking": "hardhat run scripts/deploySimpleStaking.js --network celo",
+    "deploy:router": "hardhat run scripts/deployStCeloRouter.js --network celo",
     "deploy:yearn": "hardhat run scripts/deployYearnVault.js --network celo"
   },
   "devDependencies": {
@@ -10,6 +12,7 @@
     "hardhat": "^2.26.3"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
     "dotenv": "^16.6.1"
   }
 }

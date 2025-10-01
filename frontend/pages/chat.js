@@ -21,9 +21,11 @@ import {
 import { useAccount, useWriteContract, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { availableFunctions, executeFunction } from "@/lib/llmActions";
 import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTransfer";
+import { executeStakeCelo, getExplorerUrl as getStakeExplorerUrl } from "@/lib/llmActions/stakeCelo";
 import { useContacts } from "@/hooks/useContacts";
 import { ContactAutocomplete } from "@/components/contact-autocomplete";
 import { usdToCelo, parseUsdAmount } from "@/lib/currencyUtils";
+import { useNotifications } from "@/components/notification-toast";
 
 /**
  * Chat Interface Page
@@ -35,8 +37,8 @@ export default function Chat() {
   const { address: userAddress, isConnected, chain } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
-  const publicClient = usePublicClient();
   const { contacts, searchContacts, getContactByName } = useContacts();
+  const { showNotification } = useNotifications();
   
   const [messages, setMessages] = useState([
     {
@@ -198,6 +200,10 @@ AVAILABLE FUNCTIONS:
 2. REQUEST PAYMENT - When the user wants to REQUEST money FROM someone(s), split bills, or ask for payment:
 {"name": "request_payment", "arguments": {"fromAddresses": ["0x...", "0x..."], "totalAmount": "number", "tokenSymbol": "CELO", "description": "optional text"}}
 
+3. STAKE CELO - When the user wants to stake/save CELO, earn rewards, earn yield, passive income:
+{"name": "stake_celo", "arguments": {"amount": "number"}}
+CRITICAL: If user mentions "stake", "save money", "earn rewards", "earn yield" → USE this function DIRECTLY
+
 PAYMENT REQUEST RULES:
 - CRITICAL: When user says "I paid X with @User1 and @User2", there are 3 people TOTAL (user + 2 others)
 - Each person's share = Total / Number of people INCLUDING the user
@@ -235,7 +241,10 @@ Analysis: 3 people total (user + Alice + Bob), 99 / 3 = 33 CELO per person, requ
 You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "33", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "33"}, "tokenSymbol": "CELO", "description": "dinner"}}
 
 User: "I have extra money, help me earn rewards"
-You: I can help you transfer funds or split bills. What would you like to do?`;
+You: How much CELO would you like to stake to earn rewards?
+
+User: "Stake 10 CELO"
+You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
 
       // Filter API messages to only include valid message formats
       const cleanApiHistory = cleanHistory
@@ -276,7 +285,7 @@ You: I can help you transfer funds or split bills. What would you like to do?`;
       } 
       // Handle regular message
       else if (data.type === 'message') {
-        const botResponse = {
+      const botResponse = {
           id: messages.length + 2,
           type: "bot",
           text: data.message,
@@ -434,7 +443,7 @@ You: I can help you transfer funds or split bills. What would you like to do?`;
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (!showContactDropdown) {
-        handleSendMessage();
+      handleSendMessage();
       }
     }
   };
@@ -506,7 +515,7 @@ You: I can help you transfer funds or split bills. What would you like to do?`;
     }
   };
 
-  // Handle CELO staking execution (deprecated - keeping for backward compatibility)
+  // Handle CELO staking execution
   const handleExecuteStake = async (stakeData) => {
     const { amount } = stakeData;
     
@@ -523,28 +532,8 @@ You: I can help you transfer funds or split bills. What would you like to do?`;
       const result = await executeStakeCelo({
         amount,
         writeContract: writeContractAsync,
-        sendTransaction: sendTransactionAsync,
         chainId: chain?.id || 42220,
         userAddress,
-        publicClient,
-        onSwapStart: () => {
-          const msg = {
-            id: Date.now(),
-            type: "system",
-            text: "Step 1/3: Wrapping CELO... Please confirm.",
-            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-          };
-          setMessages(prev => [...prev, msg]);
-        },
-        onSwapComplete: (swapResult) => {
-          const msg = {
-            id: Date.now(),
-            type: "system",
-            text: "Step 2/3: Approving stCELO contract... Please confirm.",
-            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-          };
-          setMessages(prev => [...prev, msg]);
-        },
       });
       
       if (result.success) {
@@ -555,7 +544,7 @@ You: I can help you transfer funds or split bills. What would you like to do?`;
         const pendingMessage = {
           id: Date.now() + 1,
           type: "system",
-          text: `Step 3/3: Staking complete! Waiting for blockchain confirmation...`,
+          text: `Staking transaction submitted! Waiting for confirmation...`,
           timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         };
         setMessages(prev => [...prev, pendingMessage]);
@@ -1010,7 +999,7 @@ You: I can help you transfer funds or split bills. What would you like to do?`;
                         </div>
                       )}
 
-                      {/* Action Messages (Stake CELO Confirmation) - DEPRECATED */}
+                      {/* Action Messages (Stake CELO Confirmation) */}
                       {message.type === "action" && message.action?.type === "stake_celo" && (
                         <div className="flex justify-start items-start gap-2">
                           <Avatar className="h-8 w-8 bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center">
@@ -1249,10 +1238,10 @@ You: I can help you transfer funds or split bills. What would you like to do?`;
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputValue("Request $15 from @Alice Johnson and @Bob Smith for lunch")}
+                onClick={() => setInputValue("I want to stake 10 CELO to earn rewards")}
                 className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
               >
-                Split Bill
+                Stake CELO
               </Button>
             </div>
           </motion.div>
