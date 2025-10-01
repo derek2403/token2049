@@ -165,3 +165,47 @@ body {
   background-image: radial-gradient(circle, #6366f1 1px, transparent 1px);
   background-size: 20px 20px;
 }
+
+/* iOS PWA Safe Area Support for iPhone 13 Pro Max */
+/* Handles notch and home indicator spacing */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-left: max(env(safe-area-inset-left), 1rem);
+    padding-right: max(env(safe-area-inset-right), 1rem);
+    padding-top: max(env(safe-area-inset-top), 0px);
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+}
+
+/* PWA viewport adjustments for mobile */
+@media screen and (max-width: 768px) {
+  html {
+    /* Prevent zoom on input focus in iOS Safari */
+    -webkit-text-size-adjust: 100%;
+    /* Smooth scrolling for mobile */
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    /* Prevent overscroll bounce effect */
+    overscroll-behavior-y: none;
+    /* Optimize font rendering on mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Optimize touch interactions for mobile */
+button, a, input, textarea {
+  /* Better touch targets on iOS */
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent accidental selection */
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Allow text selection in inputs */
+input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}

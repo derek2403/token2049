@@ -2,8 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Spotlight } from "@/components/ui/spotlight";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
-import { UserBalance } from "@/components/user-balance";
-import { Zap } from "lucide-react";
+import { ChatDemo } from "@/components/chat-demo";
 
 // Font configuration for the app
 const geistSans = Geist({
@@ -17,15 +16,16 @@ const geistMono = Geist_Mono({
 });
 
 /**
- * Single Page Ticketing Platform Landing Page
- * Integrated with Celo blockchain wallet functionality
- * Everything fits on one screen without scrolling
+ * Natural Language Transaction Engine Landing Page
+ * Mobile-first design optimized for iPhone 13 Pro Max (428x926px)
+ * Demonstrates chatbot interface for crypto transactions with EigenLayer AVS security
+ * PWA ready for iOS
  */
 export default function Home() {
   return (
-    <div className={`${geistSans.variable} ${geistMono.variable} font-sans h-screen overflow-hidden`}>
-      {/* Single Screen Layout with Spotlight Effect */}
-      <div className="h-full w-full flex flex-col bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden">
+    <div className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen overflow-x-hidden`}>
+      {/* Mobile-optimized Layout with Spotlight Effect */}
+      <div className="min-h-screen w-full flex flex-col bg-black/[0.96] antialiased bg-grid-white/[0.02] relative">
         {/* Navbar with wallet connection */}
         <Navbar />
         
@@ -35,71 +35,47 @@ export default function Home() {
           fill="white"
         />
         
-        {/* Main Content Container */}
-        <div className="flex-1 flex flex-col justify-between p-6 md:p-8 max-w-7xl mx-auto relative z-10 w-full">
+        {/* Main Content Container - Mobile optimized with safe padding */}
+        <div className="flex-1 flex flex-col px-4 py-6 md:px-8 md:py-8 max-w-7xl mx-auto relative z-10 w-full safe-area-inset">
           
-          {/* Hero Section */}
-          <div className="flex-1 flex flex-col items-center justify-center">
-            
-            {/* Text Content - Centered */}
-            <div className="flex flex-col items-center text-center">
-              {/* Main heading */}
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-3xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400"
-              >
-                Token2049
-              </motion.h1>
-              
-              {/* Subtitle */}
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="mt-4 font-normal text-sm md:text-base text-neutral-300 max-w-lg"
-              >
-                The modern ticketing platform that makes event management effortless.
-                Create, sell, and manage tickets with blockchain security.
-              </motion.p>
-
-              {/* User Balance Display - shows when wallet connected */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="w-full max-w-md mt-6"
-              >
-                <UserBalance />
-              </motion.div>
-
-              {/* CTA Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="mt-6 flex gap-3 md:gap-4"
-              >
-                <button className="px-6 md:px-8 py-2 md:py-3 text-sm md:text-base rounded-full bg-gradient-to-b from-blue-500 to-blue-600 text-white font-medium shadow-lg hover:shadow-xl transition duration-200">
-                  Browse Events
-                </button>
-                <button className="px-6 md:px-8 py-2 md:py-3 text-sm md:text-base rounded-full border border-neutral-600 text-neutral-300 hover:bg-neutral-800 transition duration-200">
-                  Create Event
-                </button>
-              </motion.div>
-            </div>
+          {/* Header Section - Compact for mobile */}
+          <div className="mb-6 mt-8 md:mt-12">
+            {/* Main heading with gradient */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-4"
+            >
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
+                Natural Language Transactions
+              </h1>
+              <p className="text-xs md:text-sm text-neutral-400 max-w-2xl mx-auto">
+                Simply tell us what you want to do. We'll handle the blockchain complexity.
+              </p>
+            </motion.div>
 
           </div>
 
-          {/* Footer */}
+          {/* Chatbot Demo - Main Feature - Mobile optimized */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex-1 flex items-start justify-center w-full"
+          >
+            <ChatDemo />
+          </motion.div>
+
+
+          {/* Footer - Compact */}
           <motion.footer
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-            className="text-neutral-500 text-xs md:text-sm text-center pb-2"
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="text-neutral-600 text-xs text-center mt-6 pb-4"
           >
-            <p>© 2025 Token2049. All rights reserved.</p>
+            <p>Powered by Celo × EigenLayer AVS</p>
           </motion.footer>
         </div>
       </div>
