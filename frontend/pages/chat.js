@@ -21,6 +21,9 @@ import {
 import { useAccount, useWriteContract, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { availableFunctions, executeFunction } from "@/lib/llmActions";
 import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTransfer";
+import { useContacts } from "@/hooks/useContacts";
+import { ContactAutocomplete } from "@/components/contact-autocomplete";
+import { usdToCelo, parseUsdAmount } from "@/lib/currencyUtils";
 
 /**
  * Chat Interface Page
@@ -32,6 +35,7 @@ export default function Chat() {
   const { address: userAddress, isConnected, chain } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
+  const { contacts, searchContacts, getContactByName } = useContacts();
   
   const [messages, setMessages] = useState([
     {
@@ -46,8 +50,16 @@ export default function Chat() {
   const [isTyping, setIsTyping] = useState(false);
   const [conversationHistory, setConversationHistory] = useState([]);
   const [pendingTxHash, setPendingTxHash] = useState(null);
+  
+  // Contact autocomplete state
+  const [showContactDropdown, setShowContactDropdown] = useState(false);
+  const [contactSearchQuery, setContactSearchQuery] = useState("");
+  const [filteredContacts, setFilteredContacts] = useState([]);
+  const [mentionStartPos, setMentionStartPos] = useState(null);
+  
   const scrollAreaRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
   
   // Watch for transaction confirmation
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -88,6 +100,49 @@ export default function Chat() {
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
+    // Process input for contacts and USD amounts
+    let processedInput = inputValue;
+    let replacements = [];
+
+    // Extract contact mentions (@ContactName) and replace with wallet addresses
+    const mentionRegex = /@([A-Za-z\s]+)/g;
+    let match;
+    while ((match = mentionRegex.exec(inputValue)) !== null) {
+      const contactName = match[1].trim();
+      const contact = getContactByName(contactName);
+      if (contact) {
+        replacements.push({
+          original: match[0],
+          replacement: contact.wallet,
+          type: 'contact',
+          name: contact.name,
+        });
+      }
+    }
+
+    // Extract USD amounts ($100) and convert to CELO
+    const usdRegex = /\$(\d+(?:\.\d+)?)/g;
+    const usdMatches = [...inputValue.matchAll(usdRegex)];
+    
+    for (const match of usdMatches) {
+      const usdAmount = parseUsdAmount(match[0]);
+      if (usdAmount) {
+        const celoAmount = await usdToCelo(usdAmount);
+        replacements.push({
+          original: match[0],
+          replacement: `${celoAmount} CELO`,
+          type: 'usd',
+          usdAmount,
+          celoAmount,
+        });
+      }
+    }
+
+    // Apply replacements
+    for (const rep of replacements) {
+      processedInput = processedInput.replace(rep.original, rep.replacement);
+    }
+
     const userMessage = {
       id: messages.length + 1,
       type: "user",
@@ -96,8 +151,9 @@ export default function Chat() {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    const currentInput = inputValue;
+    const currentInput = processedInput; // Use processed input for AI
     setInputValue("");
+    setShowContactDropdown(false);
     setIsTyping(true);
 
     try {
@@ -260,11 +316,64 @@ You: To complete the transfer, I need to know the destination address. Where wou
     }
   };
 
+  // Handle input change with contact autocomplete
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+
+    // Check for @ mention
+    const cursorPos = e.target.selectionStart;
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtSymbol !== -1) {
+      // Check if there's no space after @
+      const textAfterAt = textBeforeCursor.slice(lastAtSymbol + 1);
+      if (!textAfterAt.includes(' ')) {
+        setMentionStartPos(lastAtSymbol);
+        setContactSearchQuery(textAfterAt);
+        setFilteredContacts(searchContacts(textAfterAt));
+        setShowContactDropdown(true);
+        return;
+      }
+    }
+    
+    setShowContactDropdown(false);
+  };
+
+  // Handle contact selection
+  const handleContactSelect = (contact) => {
+    if (mentionStartPos === null) return;
+    
+    const beforeMention = inputValue.slice(0, mentionStartPos);
+    const afterMention = inputValue.slice(mentionStartPos + contactSearchQuery.length + 1);
+    
+    // Replace @query with @ContactName
+    const newValue = `${beforeMention}@${contact.name}${afterMention}`;
+    setInputValue(newValue);
+    setShowContactDropdown(false);
+    setMentionStartPos(null);
+    
+    // Focus back on input
+    inputRef.current?.focus();
+  };
+
   // Handle Enter key press
   const handleKeyPress = (e) => {
+    // If dropdown is open, handle arrow keys and enter
+    if (showContactDropdown && filteredContacts.length > 0) {
+      if (e.key === 'Escape') {
+        setShowContactDropdown(false);
+        return;
+      }
+      // Could add arrow key navigation here
+    }
+    
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      if (!showContactDropdown) {
+        handleSendMessage();
+      }
     }
   };
 
@@ -556,13 +665,22 @@ You: To complete the transfer, I need to know the destination address. Where wou
                 <div className="flex items-center gap-2">
                   <div className="flex-1 relative">
                     <Input
+                      ref={inputRef}
                       type="text"
-                      placeholder="Type your transaction request..."
+                      placeholder="Type @ for contacts, $ for USD amount..."
                       value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
+                      onChange={handleInputChange}
                       onKeyPress={handleKeyPress}
                       className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full pr-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
+                    {/* Contact Autocomplete Dropdown */}
+                    {showContactDropdown && (
+                      <ContactAutocomplete
+                        contacts={filteredContacts}
+                        onSelect={handleContactSelect}
+                        position={{ bottom: '100%', left: 0 }}
+                      />
+                    )}
                   </div>
                   <Button
                     onClick={handleSendMessage}
@@ -595,26 +713,26 @@ You: To complete the transfer, I need to know the destination address. Where wou
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputValue("Send 100 cUSD to my friend")}
+                onClick={() => setInputValue("Send $10 to @Alice")}
                 className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
               >
-                Send cUSD
+                Send to Contact
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputValue("Swap CELO for best price")}
+                onClick={() => setInputValue("Send $25 to @Bob")}
                 className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
               >
-                Swap Tokens
+                Pay $25
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputValue("Check my balance")}
+                onClick={() => setInputValue("Transfer $50 to @Carol")}
                 className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
               >
-                Check Balance
+                Transfer $50
               </Button>
             </div>
           </motion.div>
