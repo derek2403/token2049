@@ -231,9 +231,9 @@ export function ChatDemo() {
                           <p className="text-sm mb-3">{message.text}</p>
                           <Link href="/chat">
                             <PulsatingButton 
-                              pulseColor="rgba(115, 115, 115, 0.5)"
+                              pulseColor="rgba(255, 255, 255, 0.3)"
                               duration="2s"
-                              className="w-full bg-neutral-700 hover:bg-neutral-600 text-neutral-100 transition-colors"
+                              className="w-full bg-white hover:bg-gray-100 text-black transition-colors font-medium"
                             >
                               Try it Now →
                             </PulsatingButton>
