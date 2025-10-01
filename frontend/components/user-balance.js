@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Celo token contract addresses on mainnet
 const cUSD_ADDRESS = "0x765de816845861e75a25fca122bb6898b8b1282a";
-const USDC_ADDRESS = "0xcebA9300f2b948710d2653dD7B07f33A8B32118C";
+const USDC_ADDRESS = "0x01C5C0122039549AD1493B8220cABEdD739BC44E";
 const USDT_ADDRESS = "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e";
 
 /**
@@ -58,4 +58,3 @@ export function UserBalance() {
     </Card>
   );
 }
-
