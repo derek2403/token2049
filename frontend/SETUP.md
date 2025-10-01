@@ -1,4 +1,4 @@
-# TOKEN2049 Tickets - Celo Integration Setup
+# LeftAI - Celo Integration Setup
 
 ## Environment Configuration
 

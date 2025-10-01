@@ -20,7 +20,7 @@ export default function Document() {
         {/* iOS PWA Configuration */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="NL Transactions" />
+        <meta name="apple-mobile-web-app-title" content="LeftAI" />
         
         {/* iOS Splash Screen - iPhone 13 Pro Max */}
         <link rel="apple-touch-icon" href="/icon-192x192.png" />

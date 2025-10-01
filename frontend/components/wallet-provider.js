@@ -36,7 +36,7 @@ const connectors = connectorsForWallets(
     },
   ],
   {
-    appName: "Token2049",
+    appName: "LeftAI",
     projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "YOUR_PROJECT_ID",
   }
 );
