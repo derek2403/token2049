@@ -123,7 +123,7 @@ export default function Chat() {
     {
       id: 1,
       type: "bot",
-      text: "👋 Hello! I'm your LeftAI assistant. Tell me what you'd like to do with your crypto.",
+      text: "Hello! Let me know what you'd like to do with your funds!",
       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     }
   ]);
