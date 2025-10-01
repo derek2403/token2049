@@ -314,74 +314,74 @@ export function Navbar() {
             </div>
             
             {/* Token Balances Section */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wide">
+            <div className="space-y-3">
+              <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wide mb-3">
                 Token Balances
               </h3>
               
               {/* USDC Balance */}
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-br from-blue-900/20 to-blue-800/10 rounded-lg border border-blue-700/30">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div className="flex items-center justify-between p-4 sm:p-5 bg-neutral-800/80 rounded-xl border-2 border-neutral-700 shadow-lg hover:bg-neutral-800 transition-colors">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neutral-900 flex items-center justify-center flex-shrink-0 overflow-hidden border border-neutral-600 shadow-md">
                     <Image 
                       src="/logos/usd-coin-usdc-logo.svg"
                       alt="USDC"
-                      width={40}
-                      height={40}
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div>
-                    <p className="text-xs sm:text-sm font-medium text-neutral-100">USDC</p>
+                    <p className="text-sm sm:text-base font-semibold text-neutral-50">USDC</p>
                     <p className="text-[10px] sm:text-xs text-neutral-400">USD Coin</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm sm:text-lg font-semibold text-neutral-100">${userData.balances.USDC}</p>
+                  <p className="text-base sm:text-xl font-bold text-neutral-50">${userData.balances.USDC}</p>
                 </div>
               </div>
               
               {/* USDT Balance */}
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-br from-green-900/20 to-green-800/10 rounded-lg border border-green-700/30">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div className="flex items-center justify-between p-4 sm:p-5 bg-neutral-800/80 rounded-xl border-2 border-neutral-700 shadow-lg hover:bg-neutral-800 transition-colors">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neutral-900 flex items-center justify-center flex-shrink-0 overflow-hidden border border-neutral-600 shadow-md">
                     <Image 
                       src="/logos/USDT_Logo.png"
                       alt="USDT"
-                      width={40}
-                      height={40}
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div>
-                    <p className="text-xs sm:text-sm font-medium text-neutral-100">USDT</p>
+                    <p className="text-sm sm:text-base font-semibold text-neutral-50">USDT</p>
                     <p className="text-[10px] sm:text-xs text-neutral-400">Tether USD</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm sm:text-lg font-semibold text-neutral-100">${userData.balances.USDT}</p>
+                  <p className="text-base sm:text-xl font-bold text-neutral-50">${userData.balances.USDT}</p>
                 </div>
               </div>
               
               {/* cUSD Balance */}
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 rounded-lg border border-yellow-700/30">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div className="flex items-center justify-between p-4 sm:p-5 bg-neutral-800/80 rounded-xl border-2 border-neutral-700 shadow-lg hover:bg-neutral-800 transition-colors">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neutral-900 flex items-center justify-center flex-shrink-0 overflow-hidden border border-neutral-600 shadow-md">
                     <Image 
                       src="/logos/cUSD.png"
                       alt="cUSD"
-                      width={40}
-                      height={40}
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div>
-                    <p className="text-xs sm:text-sm font-medium text-neutral-100">cUSD</p>
+                    <p className="text-sm sm:text-base font-semibold text-neutral-50">cUSD</p>
                     <p className="text-[10px] sm:text-xs text-neutral-400">Celo Dollar</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm sm:text-lg font-semibold text-neutral-100">${userData.balances.cUSD}</p>
+                  <p className="text-base sm:text-xl font-bold text-neutral-50">${userData.balances.cUSD}</p>
                 </div>
               </div>
             </div>
