@@ -1,18 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { Spotlight } from "@/components/ui/spotlight";
 import { motion } from "framer-motion";
-import dynamic from 'next/dynamic';
-
-// Dynamically import Spline to avoid SSR issues
-// This loads the 3D model only on the client side
-const Spline = dynamic(() => import('@splinetool/react-spline'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="text-neutral-400 text-sm">Loading 3D model...</div>
-    </div>
-  ),
-});
+import { Navbar } from "@/components/navbar";
+import { UserBalance } from "@/components/user-balance";
+import { Zap } from "lucide-react";
 
 // Font configuration for the app
 const geistSans = Geist({
@@ -27,6 +18,7 @@ const geistMono = Geist_Mono({
 
 /**
  * Single Page Ticketing Platform Landing Page
+ * Integrated with Celo blockchain wallet functionality
  * Everything fits on one screen without scrolling
  */
 export default function Home() {
@@ -34,6 +26,9 @@ export default function Home() {
     <div className={`${geistSans.variable} ${geistMono.variable} font-sans h-screen overflow-hidden`}>
       {/* Single Screen Layout with Spotlight Effect */}
       <div className="h-full w-full flex flex-col bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden">
+        {/* Navbar with wallet connection */}
+        <Navbar />
+        
         {/* Spotlight effect - animated background */}
         <Spotlight
           className="-top-40 left-0 md:left-60 md:-top-20"
@@ -44,15 +39,26 @@ export default function Home() {
         <div className="flex-1 flex flex-col justify-between p-6 md:p-8 max-w-7xl mx-auto relative z-10 w-full">
           
           {/* Hero Section */}
-          <div className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-8">
+          <div className="flex-1 flex flex-col items-center justify-center">
             
-            {/* Left side - Text Content */}
-            <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left">
+            {/* Text Content - Centered */}
+            <div className="flex flex-col items-center text-center">
+              {/* Celo Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-2 px-3 py-1 mb-6 text-sm font-medium bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20"
+              >
+                <Zap className="h-4 w-4" />
+                Powered by Celo Blockchain
+              </motion.div>
+
               {/* Main heading */}
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
                 className="text-3xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400"
               >
                 TOKEN2049 Tickets
@@ -66,8 +72,18 @@ export default function Home() {
                 className="mt-4 font-normal text-sm md:text-base text-neutral-300 max-w-lg"
               >
                 The modern ticketing platform that makes event management effortless.
-                Create, sell, and manage tickets for any event size.
+                Create, sell, and manage tickets with blockchain security.
               </motion.p>
+
+              {/* User Balance Display - shows when wallet connected */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="w-full max-w-md mt-6"
+              >
+                <UserBalance />
+              </motion.div>
 
               {/* CTA Buttons */}
               <motion.div
@@ -77,31 +93,13 @@ export default function Home() {
                 className="mt-6 flex gap-3 md:gap-4"
               >
                 <button className="px-6 md:px-8 py-2 md:py-3 text-sm md:text-base rounded-full bg-gradient-to-b from-blue-500 to-blue-600 text-white font-medium shadow-lg hover:shadow-xl transition duration-200">
-                  Get Started Free
+                  Browse Events
                 </button>
                 <button className="px-6 md:px-8 py-2 md:py-3 text-sm md:text-base rounded-full border border-neutral-600 text-neutral-300 hover:bg-neutral-800 transition duration-200">
-                  Watch Demo
+                  Create Event
                 </button>
               </motion.div>
             </div>
-
-            {/* Right side - iPhone Spline 3D Model */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="flex-1 w-full max-w-md h-[400px] md:h-[500px] lg:h-[600px]"
-            >
-              {/* Spline 3D iPhone Model - Using iframe embed as fallback */}
-              <iframe 
-                src='https://my.spline.design/iphone14procopy-IAMvdRgbC8JyQMhBQIVyL1FG/' 
-                frameBorder='0' 
-                width='100%' 
-                height='100%'
-                className="w-full h-full rounded-lg"
-                title="iPhone 3D Model"
-              />
-            </motion.div>
 
           </div>
 
