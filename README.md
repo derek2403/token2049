@@ -14,7 +14,9 @@ Check out the live demo of **LeftAI**: 👉 [Click here to try it out](https://t
 
 LeftAI is designed as a mobile-first application, optimized for Celo MiniPay's mobile wallet experience. The interface provides an intuitive, chat-based interaction for crypto transactions on the go.
 
-![LeftAI Mobile View](./frontend/public/mobile%20view.png)
+<p align="center">
+  <img src="./frontend/public/mobile%20view.png" alt="LeftAI Mobile View" width="400">
+</p>
 
 ## Demo Video
 [🎥 Watch Demo Video](#)
