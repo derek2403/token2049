@@ -194,7 +194,10 @@ AVAILABLE FUNCTIONS:
 {"name": "request_payment", "arguments": {"fromAddresses": ["0x...", "0x..."], "totalAmount": "number", "tokenSymbol": "CELO", "description": "optional text"}}
 
 PAYMENT REQUEST RULES:
-- For EQUAL split: provide only totalAmount and it will be divided equally
+- CRITICAL: When user says "I paid X with @User1 and @User2", there are 3 people TOTAL (user + 2 others)
+- Each person's share = Total / Number of people INCLUDING the user
+- Request each person's share from EACH mentioned person, NOT the full total split between them
+- For EQUAL split among mentioned users: calculate per-person amount first, then use individualAmounts
 - For CUSTOM amounts: use individualAmounts object with address-amount pairs
 - If user mentions total AND some specific amounts but NOT all: calculate remaining amount for unspecified users
 - Parse patterns like "I paid X for Y, @User1 amount1, @User2 amount2, @User3" - User3 gets remainder
@@ -207,8 +210,9 @@ EXAMPLES:
 User: "Send 20 CELO to 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
 You: {"name": "transfer_funds", "arguments": {"destinationAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb", "amount": "20", "tokenSymbol": "CELO"}}
 
-User: "I paid 60 CELO for dinner, split with 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 and 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"
-You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "totalAmount": "60", "tokenSymbol": "CELO", "description": "dinner"}}
+User: "I paid 60 CELO for dinner with 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 and 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"
+Analysis: 3 people total (user + 2 others), 60 CELO / 3 = 20 CELO per person
+You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "20", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "20"}, "tokenSymbol": "CELO", "description": "dinner"}}
 
 User: "i paid for dinner 30 CELO 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 15 CELO 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092 10 CELO 0x41Db99b9A098Af28A06C0af238799c08076Af2f7"
 Analysis: Total = 30 CELO, Alice = 15 CELO, Bob = 10 CELO, Carol = remainder = 5 CELO
@@ -217,9 +221,13 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
 User: "Request 10 CELO from 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 and 25 CELO from 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"
 You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "10", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "25"}, "tokenSymbol": "CELO"}}
 
-User: "Split 90 CELO movie tickets with 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092 0x41Db99b9A098Af28A06C0af238799c08076Af2f7"
-Analysis: Equal split among 3 people = 30 CELO each
-You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092", "0x41Db99b9A098Af28A06C0af238799c08076Af2f7"], "totalAmount": "90", "tokenSymbol": "CELO", "description": "movie tickets"}}`;
+User: "I paid 90 CELO for movie tickets with 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092 0x41Db99b9A098Af28A06C0af238799c08076Af2f7"
+Analysis: 4 people total (user + 3 others), 90 / 4 = 22.5 CELO per person
+You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092", "0x41Db99b9A098Af28A06C0af238799c08076Af2f7"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "22.5", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "22.5", "0x41Db99b9A098Af28A06C0af238799c08076Af2f7": "22.5"}, "tokenSymbol": "CELO", "description": "movie tickets"}}
+
+User: "I had dinner with 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 and 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092, I paid 99 CELO help me split bill"
+Analysis: 3 people total (user + Alice + Bob), 99 / 3 = 33 CELO per person, request 33 from each
+You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "33", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "33"}, "tokenSymbol": "CELO", "description": "dinner"}}`;
 
       const apiMessages = [
         { role: "system", content: systemPrompt },
