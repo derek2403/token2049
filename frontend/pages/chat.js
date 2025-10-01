@@ -113,6 +113,9 @@ export default function Chat() {
             <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
               Natural Language Chat
             </h1>
+            <p className="text-xs md:text-sm text-neutral-400">
+              Chat with AI to make crypto transactions
+            </p>
           </motion.div>
 
           {/* Chat Container */}
@@ -162,7 +165,7 @@ export default function Chat() {
                               {message.intent && (
                                 <div className="mt-3 bg-neutral-900/50 rounded-lg p-3 border border-neutral-700">
                                   <div className="flex items-center gap-2 text-xs text-neutral-400">
-                                    <Clock className="h-3 w-3" />
+                                    <Clock className="h-3 w-3 text-white" />
                                     <span>{message.intent.action}</span>
                                   </div>
                                 </div>
@@ -177,7 +180,7 @@ export default function Chat() {
                       {message.type === "system" && (
                         <div className="flex justify-center">
                           <div className="bg-neutral-800/50 rounded-full px-4 py-1.5 flex items-center gap-2">
-                            <Clock className="h-3 w-3 text-blue-400 animate-pulse" />
+                            <Clock className="h-3 w-3 text-white animate-pulse" />
                             <p className="text-xs text-neutral-400">{message.text}</p>
                           </div>
                         </div>
@@ -192,7 +195,7 @@ export default function Chat() {
                           <div className="max-w-[80%] md:max-w-[70%]">
                             <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-2xl rounded-tl-md px-4 py-3">
                               <div className="flex items-center gap-2 mb-2">
-                                <CheckCircle2 className="h-4 w-4 text-green-400" />
+                                <CheckCircle2 className="h-4 w-4 text-white" />
                                 <p className="text-sm text-green-300 font-medium">{message.text}</p>
                               </div>
                               {message.details && (
@@ -252,8 +255,15 @@ export default function Chat() {
                     disabled={!inputValue.trim()}
                     className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-full h-10 w-10 p-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-4 w-4 text-white" />
                   </Button>
+                </div>
+                
+                {/* Info Badge */}
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <Badge variant="secondary" className="text-xs bg-neutral-800 text-neutral-400 border-neutral-700">
+                    AI-Powered Transactions
+                  </Badge>
                 </div>
               </div>
             </Card>

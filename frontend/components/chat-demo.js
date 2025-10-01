@@ -163,7 +163,7 @@ export function ChatDemo() {
               {message.type === "system" && (
                 <div className="flex justify-center">
                   <div className="bg-neutral-800/50 rounded-full px-4 py-1.5 flex items-center gap-2">
-                    <Clock className="h-3 w-3 text-blue-400 animate-pulse" />
+                    <Clock className="h-3 w-3 text-white animate-pulse" />
                     <p className="text-xs text-neutral-400">{message.text}</p>
                   </div>
                 </div>
@@ -175,7 +175,7 @@ export function ChatDemo() {
                   <div className="max-w-[85%]">
                     <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-2xl rounded-tl-md px-4 py-3">
                       <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-400" />
+                        <CheckCircle2 className="h-4 w-4 text-white" />
                         <p className="text-sm text-green-300 font-medium">{message.text}</p>
                       </div>
                       <div className="space-y-1 pl-6">
