@@ -569,8 +569,8 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
     const beforeMention = inputValue.slice(0, mentionStartPos);
     const afterMention = inputValue.slice(mentionStartPos + contactSearchQuery.length + 1);
     
-    // Replace @query with @ContactName
-    const newValue = `${beforeMention}@${contact.name}${afterMention}`;
+    // Replace @query with @ContactName and add space after
+    const newValue = `${beforeMention}@${contact.name} ${afterMention}`;
     setInputValue(newValue);
     setShowContactDropdown(false);
     setMentionStartPos(null);
