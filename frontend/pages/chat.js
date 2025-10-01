@@ -1229,23 +1229,31 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
 
               {/* Quick Actions - Compact but clickable */}
               <div className="px-3 py-2 border-t border-neutral-800 bg-neutral-900/30 flex-shrink-0">
-                <p className="text-xs text-neutral-500 text-center mb-1.5">Quick actions:</p>
+                <p className="text-xs text-neutral-500 text-center mb-1.5">Recent actions:</p>
                 <div className="flex gap-2 justify-center">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setInputValue("Send 100 cUSD to my friend")}
+                    onClick={() => setInputValue("Send $0.01 to @Alice Johnson")}
                     className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8"
                   >
-                    Send cUSD
+                    Send USDC
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setInputValue("Swap CELO for best price")}
+                    onClick={() => setInputValue("SI paid $60 for dinner with @Bob Smith and @Carol Lee, split it equally")}
                     className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8"
                   >
                     Swap Tokens
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setInputValue("I have extra money to invest")}
+                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8"
+                  >
+                    Earn Yields
                   </Button>
                 </div>
               </div>
