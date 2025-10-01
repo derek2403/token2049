@@ -48,18 +48,18 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex-1 min-h-0 flex items-start justify-center w-full overflow-hidden"
+            className="flex-1 min-h-0 flex items-start justify-center w-full overflow-visible"
           >
             <ChatDemo />
           </motion.div>
 
 
-          {/* Footer - Compact */}
+          {/* Footer - Hidden on mobile, visible on desktop */}
           <motion.footer
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="text-neutral-600 text-xs text-center mt-6 pb-4"
+            className="text-neutral-600 text-xs text-center mt-6 pb-4 hidden md:block"
           >
             <p>© 2025 LeftAI. All rights reserved.</p>
           </motion.footer>
