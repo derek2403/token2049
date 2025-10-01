@@ -5,7 +5,7 @@ import Image from "next/image"
 import { useRouter } from "next/router"
 import { useState, useEffect } from "react"
 import { Menu, Wallet, Copy, Check, Loader2 } from "lucide-react"
-import { useAccount, useReadContract, useChainId } from "wagmi"
+import { useAccount, useReadContract, useChainId, useBalance } from "wagmi"
 import { formatUnits } from "viem"
 
 import { Button } from "@/components/ui/button"
@@ -41,7 +41,7 @@ const TOKEN_ADDRESSES = {
   },
   // Celo Mainnet (chainId: 42220)
   42220: {
-    USDC: "0xef4229c8c3250C675F21BCefa42f58EfbfF6002a", // Mainnet USDC
+    USDC: "0xcebA9300f2b948710d2653dD7B07f33A8B32118C", // Mainnet USDC (Circle)
     USDT: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e", // Mainnet USDT
     cUSD: "0x765DE816845861e75A25fCA122bb6898B8B1282a", // Mainnet cUSD
   },
@@ -85,21 +85,9 @@ export function Navbar() {
     enabled: !!address && isConnected,
   })
   
-  // Fetch USDT balance
-  const { data: usdtBalance } = useReadContract({
-    address: tokenAddresses.USDT,
-    abi: ERC20_ABI,
-    functionName: "balanceOf",
-    args: [address],
-    enabled: !!address && isConnected,
-  })
-  
-  // Fetch cUSD balance
-  const { data: cusdBalance } = useReadContract({
-    address: tokenAddresses.cUSD,
-    abi: ERC20_ABI,
-    functionName: "balanceOf",
-    args: [address],
+  // Fetch native CELO balance
+  const { data: celoBalance } = useBalance({
+    address: address,
     enabled: !!address && isConnected,
   })
   
@@ -138,25 +126,28 @@ export function Navbar() {
   }
   
   // Prepare user data with actual wallet info
+  const CELO_PRICE_USD = 0.26; // Approximate CELO price in USD
+  
+  const celoRaw = celoBalance ? parseFloat(celoBalance.formatted) : 0;
+  const usdcRaw = usdcBalance ? parseFloat(formatUnits(usdcBalance, 6)) : 0;
+  
   const userData = {
-    name: generateRandomName(address),
-    phone: "+1 (234) 567-8900", // You can make this editable or remove it
     address: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Not connected",
     fullAddress: address || "",
     balances: {
-      USDC: formatBalance(usdcBalance, 6), // USDC typically has 6 decimals
-      USDT: formatBalance(usdtBalance, 6), // USDT typically has 6 decimals
-      cUSD: formatBalance(cusdBalance, 18), // cUSD has 18 decimals
+      USDC: usdcRaw.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      USDCRaw: usdcRaw.toFixed(2),
+      CELO: celoRaw.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      CELOinUSD: (celoRaw * CELO_PRICE_USD).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     }
   }
   
-  // Calculate total balance
+  // Calculate total balance in USD
   const calculateTotal = () => {
     try {
-      const usdc = parseFloat(userData.balances.USDC.replace(/,/g, '')) || 0
-      const usdt = parseFloat(userData.balances.USDT.replace(/,/g, '')) || 0
-      const cusd = parseFloat(userData.balances.cUSD.replace(/,/g, '')) || 0
-      return (usdc + usdt + cusd).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      const usdcValue = usdcRaw;
+      const celoValue = celoRaw * CELO_PRICE_USD;
+      return (usdcValue + celoValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     } catch {
       return "0.00"
     }
@@ -189,7 +180,14 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80 bg-neutral-950 border-neutral-800/50">
-              <div className="flex items-center gap-2 mb-8">
+              <div className="flex items-center gap-1 mb-8">
+                <Image 
+                  src="/logos/leftAI.png"
+                  alt="LeftAI Logo"
+                  width={28}
+                  height={28}
+                  className="w-7 h-7"
+                />
                 <span className="font-bold text-lg text-neutral-100">
                   LeftAI
                 </span>
@@ -221,7 +219,14 @@ export function Navbar() {
           </Sheet>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+            <Image 
+              src="/logos/leftAI.png"
+              alt="LeftAI Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
             <span className="font-bold text-xl text-neutral-100">
               LeftAI
             </span>
@@ -289,29 +294,12 @@ export function Navbar() {
           </DialogHeader>
           
           <div className="space-y-3 sm:space-y-4 py-2">
-            {/* User Information Section */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wide">
-                User Information
-              </h3>
-              
-              {/* Name */}
-              <div className="flex items-center justify-between p-2 sm:p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
-                <span className="text-xs sm:text-sm text-neutral-400">Name</span>
-                <span className="text-xs sm:text-sm font-medium text-neutral-100">{userData.name}</span>
-              </div>
-              
-              {/* Phone */}
-              <div className="flex items-center justify-between p-2 sm:p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
-                <span className="text-xs sm:text-sm text-neutral-400">Phone</span>
-                <span className="text-xs sm:text-sm font-medium text-neutral-100">{userData.phone}</span>
-              </div>
-              
-              {/* Wallet Address with Copy Button */}
-              <div className="flex items-center justify-between p-2 sm:p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
-                <span className="text-xs sm:text-sm text-neutral-400">Wallet</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs sm:text-sm font-medium text-neutral-100 font-mono">{userData.address}</span>
+            {/* Wallet Information Section */}
+            <div className="space-y-2 mb-6">
+              {/* Wallet Address with Copy Button and Celoscan Link */}
+              <div className="p-3 sm:p-4 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs sm:text-sm text-neutral-400">Wallet</span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -325,6 +313,15 @@ export function Navbar() {
                     )}
                   </Button>
                 </div>
+                <p className="text-xs sm:text-sm font-medium text-neutral-100 font-mono break-all mb-2">{userData.fullAddress}</p>
+                <a 
+                  href={`https://celoscan.io/address/${userData.fullAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-400 hover:text-blue-300 inline-block"
+                >
+                  View on Celoscan →
+                </a>
               </div>
             </div>
             
@@ -353,50 +350,30 @@ export function Navbar() {
                 </div>
                 <div className="text-right">
                   <p className="text-base sm:text-xl font-bold text-neutral-50">${userData.balances.USDC}</p>
+                  <p className="text-[10px] sm:text-xs text-neutral-400">{userData.balances.USDCRaw} USDC</p>
                 </div>
               </div>
               
-              {/* USDT Balance */}
+              {/* CELO Balance */}
               <div className="flex items-center justify-between p-4 sm:p-5 bg-neutral-800/80 rounded-xl border-2 border-neutral-700 shadow-lg hover:bg-neutral-800 transition-colors">
                 <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neutral-900 flex items-center justify-center flex-shrink-0 overflow-hidden border border-neutral-600 shadow-md">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0 overflow-hidden border border-neutral-600 shadow-md">
                     <Image 
-                      src="/logos/USDT_Logo.png"
-                      alt="USDT"
+                      src="/celo.png"
+                      alt="CELO"
                       width={48}
                       height={48}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div>
-                    <p className="text-sm sm:text-base font-semibold text-neutral-50">USDT</p>
-                    <p className="text-[10px] sm:text-xs text-neutral-400">Tether USD</p>
+                    <p className="text-sm sm:text-base font-semibold text-neutral-50">CELO</p>
+                    <p className="text-[10px] sm:text-xs text-neutral-400">Celo</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-base sm:text-xl font-bold text-neutral-50">${userData.balances.USDT}</p>
-                </div>
-              </div>
-              
-              {/* cUSD Balance */}
-              <div className="flex items-center justify-between p-4 sm:p-5 bg-neutral-800/80 rounded-xl border-2 border-neutral-700 shadow-lg hover:bg-neutral-800 transition-colors">
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neutral-900 flex items-center justify-center flex-shrink-0 overflow-hidden border border-neutral-600 shadow-md">
-                    <Image 
-                      src="/logos/cUSD.png"
-                      alt="cUSD"
-                      width={48}
-                      height={48}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm sm:text-base font-semibold text-neutral-50">cUSD</p>
-                    <p className="text-[10px] sm:text-xs text-neutral-400">Celo Dollar</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-base sm:text-xl font-bold text-neutral-50">${userData.balances.cUSD}</p>
+                  <p className="text-base sm:text-xl font-bold text-neutral-50">${userData.balances.CELOinUSD}</p>
+                  <p className="text-[10px] sm:text-xs text-neutral-400">{userData.balances.CELO} CELO</p>
                 </div>
               </div>
             </div>

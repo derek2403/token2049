@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Clock, ArrowRight } from "lucide-react";
+import { Clock, ArrowRight, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { BorderBeam } from "@/components/ui/border-beam";
@@ -9,20 +9,18 @@ import { PulsatingButton } from "@/components/ui/pulsating-button";
 import Link from "next/link";
 
 /**
- * Highlight Tagged Users Component
- * Parses text and highlights @mentions AND user names with a gradient background
- * Supports multi-word mentions like "@James ETHGlobal" or "James ETHGlobal"
+ * Highlight Tagged Users and USD Amounts Component
+ * Parses text and highlights @mentions and $amounts
  */
 function HighlightedText({ text }) {
   // List of known user names to highlight (with and without @)
   const userNames = ['James ETHGlobal', 'derek eth', 'Derek'];
   
-  // Build regex pattern to match exact usernames with or without @
-  // Escape special chars and create pattern for @name or name
+  // Build regex pattern to match usernames OR $amounts
   const escapedNames = userNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const withAt = escapedNames.map(name => '@' + name);
   const allPatterns = [...withAt, ...escapedNames].join('|');
-  const pattern = new RegExp(`(${allPatterns})`, 'gi');
+  const pattern = new RegExp(`(${allPatterns})|(\\\$\\d+(?:\\.\\d+)?)`, 'gi');
   
   const parts = text.split(pattern);
   
@@ -30,6 +28,18 @@ function HighlightedText({ text }) {
     <span>
       {parts.map((part, index) => {
         if (!part) return null;
+        
+        // Check if it's a $amount
+        if (part.match(/^\$\d+(?:\.\d+)?$/)) {
+          return (
+            <span
+              key={index}
+              className="text-green-300 font-semibold underline decoration-green-300/50 underline-offset-2"
+            >
+              {part}
+            </span>
+          );
+        }
         
         // Check if it's a mention (starts with @) or matches a known user name
         const trimmedPart = part.trim();
@@ -40,7 +50,7 @@ function HighlightedText({ text }) {
         );
         
         if (isMention || isUserName) {
-          // Highlight the mention with gradient and subtle glow
+          // Highlight the mention with gradient
           return (
             <span
               key={index}
@@ -232,7 +242,7 @@ export function ChatDemo() {
   }, [currentIndex, scrollToBottom]); // Include scrollToBottom in deps
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg relative overflow-hidden">
+    <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg relative overflow-hidden mb-4">
       {/* Border Beam Effects - Dual animated beams */}
       <BorderBeam 
         duration={6}
@@ -421,7 +431,15 @@ export function ChatDemo() {
             disabled
             className="flex-1 bg-transparent text-sm text-neutral-500 outline-none cursor-not-allowed"
           />
-          <Badge variant="secondary" className="text-xs">Let's Go!</Badge>
+          {/* Use same Send icon style as full chat page */}
+          <button
+            type="button"
+            disabled
+            aria-label="Send"
+            className="bg-neutral-700 text-white rounded-full h-10 w-10 p-0 opacity-60 cursor-not-allowed flex items-center justify-center flex-shrink-0"
+          >
+            <Send className="h-5 w-5 text-white" />
+          </button>
         </div>
       </div>
     </Card>

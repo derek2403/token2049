@@ -87,6 +87,17 @@
     box-shadow: 0 0 0 8px var(--pulse-color);
     }
   }
+  
+  /* Aurora text animation - infinite left to right movement with shimmer */
+  --animate-aurora: aurora 8s linear infinite;
+  @keyframes aurora {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 400% 50%;
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -184,7 +195,8 @@ body {
     padding-left: max(env(safe-area-inset-left), 1rem);
     padding-right: max(env(safe-area-inset-right), 1rem);
     padding-top: max(env(safe-area-inset-top), 0px);
-    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+    /* Add extra breathing room at the bottom so input bar never touches the border */
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   }
 }
 
