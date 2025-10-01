@@ -165,13 +165,17 @@ export default function Chat() {
     setIsTyping(true);
 
     try {
-      // Build conversation history
+      // Build conversation history - filter out function calls and function messages
+      const cleanHistory = conversationHistory.filter(msg => 
+        msg.role !== 'function' && !msg.function_call
+      );
+      
       const newHistory = [
         ...conversationHistory,
         { role: "user", content: currentInput }
       ];
 
-      // Prepare messages for RedPill API (OpenAI format)
+      // Prepare messages for RedPill API (OpenAI format) - use clean history
       const systemPrompt = `You are a helpful AI assistant for crypto transactions on the Celo blockchain. 
 Help users understand and execute their crypto transactions using natural language. 
 Be concise, friendly, and security-conscious.
@@ -229,9 +233,15 @@ User: "I had dinner with 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 and 0xf1a7b4
 Analysis: 3 people total (user + Alice + Bob), 99 / 3 = 33 CELO per person, request 33 from each
 You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "33", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "33"}, "tokenSymbol": "CELO", "description": "dinner"}}`;
 
+      // Filter API messages to only include valid message formats
+      const cleanApiHistory = cleanHistory
+        .filter(msg => msg.role && msg.content)
+        .slice(-8); // Keep last 8 clean exchanges
+      
       const apiMessages = [
         { role: "system", content: systemPrompt },
-        ...newHistory.slice(-10), // Keep last 10 exchanges for context
+        ...cleanApiHistory,
+        { role: "user", content: currentInput }
       ];
 
       // Call our API route (without native function calling, using JSON in text instead)
@@ -248,10 +258,13 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get AI response');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('API Error:', response.status, errorData);
+        throw new Error(errorData.error || `Failed to get AI response (${response.status})`);
       }
 
       const data = await response.json();
+      console.log('AI Response:', data);
       
       // Handle function call
       if (data.type === 'function_call') {
@@ -276,11 +289,11 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
     } catch (error) {
       console.error('Error sending message:', error);
       
-      // Error message
+      // Error message with more details
       const errorMessage = {
         id: messages.length + 2,
         type: "bot",
-        text: "Sorry, I'm having trouble connecting to the AI service. Please try again.",
+        text: `Sorry, I'm having trouble connecting to the AI service. ${error.message || 'Please try again.'}`,
         timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       };
       
