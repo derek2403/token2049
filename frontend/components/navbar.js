@@ -35,7 +35,7 @@ export function Navbar() {
   
   return (
     <header className="sticky top-0 z-50 w-full border-b border-neutral-800/50 bg-black/90 backdrop-blur-md supports-[backdrop-filter]:bg-black/70">
-      <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 mx-auto">
+      <div className="container flex h-14 md:h-16 max-w-screen-2xl items-center justify-between px-4 mx-auto">
         <div className="flex items-center gap-2">
           {/* Mobile menu button */}
           <Sheet>

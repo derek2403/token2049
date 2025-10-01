@@ -39,6 +39,49 @@ export default function Chat() {
   const messagesEndRef = useRef(null);
   const prevMessageCountRef = useRef(messages.length); // Track previous message count
 
+  // Set a reliable mobile viewport height CSS variable (--vh)
+  // This fixes iOS/Chrome mobile where 100vh includes browser UI
+  useEffect(() => {
+    const setViewportHeightVar = () => {
+      const viewportHeight = typeof window !== 'undefined' && window.visualViewport
+        ? window.visualViewport.height
+        : (typeof window !== 'undefined' ? window.innerHeight : 0);
+      if (viewportHeight) {
+        const vhUnit = viewportHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vhUnit}px`);
+      }
+    };
+
+    setViewportHeightVar();
+
+    // Update on viewport changes (rotation, URL bar show/hide, etc.)
+    const onResize = () => setViewportHeightVar();
+    const onVisibility = () => setViewportHeightVar();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', onResize);
+      window.addEventListener('orientationchange', onResize);
+      window.addEventListener('focus', onResize);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', onResize);
+        window.visualViewport.addEventListener('scroll', onResize);
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', onResize);
+        window.removeEventListener('orientationchange', onResize);
+        window.removeEventListener('focus', onResize);
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', onResize);
+          window.visualViewport.removeEventListener('scroll', onResize);
+        }
+      }
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -94,11 +137,13 @@ export default function Chat() {
   };
 
   return (
-    <div className="font-sans min-h-screen overflow-x-hidden">
-      {/* Main Layout with Spotlight Effect */}
-      <div className="min-h-screen w-full flex flex-col bg-black/[0.96] antialiased bg-grid-white/[0.02] relative">
-        {/* Navbar */}
-        <Navbar />
+    <div className="font-sans flex flex-col overflow-hidden" style={{ height: 'calc(var(--vh, 1vh) * 100)', minHeight: '100dvh' }}>
+      {/* Main Layout - Fixed Height Container */}
+      <div className="flex-1 flex flex-col bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden min-h-0">
+        {/* Navbar - Fixed at top */}
+        <div className="flex-shrink-0">
+          <Navbar />
+        </div>
         
         {/* Spotlight effect - animated background */}
         <Spotlight
@@ -106,35 +151,20 @@ export default function Chat() {
           fill="white"
         />
         
-        {/* Main Content Container */}
-        <div className="flex-1 flex flex-col px-4 py-6 md:px-8 md:py-8 max-w-5xl mx-auto relative z-10 w-full">
+        {/* Main Content Container - Flexible height with minimal spacing */}
+        <div className="flex-1 flex flex-col px-2 py-1.5 md:px-8 md:py-8 max-w-5xl mx-auto relative z-10 w-full min-h-0">
           
-          {/* Header Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-6"
-          >
-            <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
-              LeftAI Chat
-            </h1>
-            <p className="text-xs md:text-sm text-neutral-400">
-              Chat with AI to make crypto transactions
-            </p>
-          </motion.div>
-
-          {/* Chat Container */}
+          {/* Chat Container - Takes all remaining space */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex-1 flex flex-col w-full max-w-4xl mx-auto"
+            className="flex-1 flex flex-col w-full max-w-4xl mx-auto min-h-0"
           >
-            <Card className="flex-1 flex flex-col bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg overflow-hidden">
-              {/* Messages Area */}
-              <ScrollArea className="flex-1 p-4 md:p-6">
-                <div className="space-y-4">
+            <Card className="flex-1 flex flex-col bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg overflow-hidden min-h-0">
+              {/* Messages Area - Scrollable within fixed container */}
+              <ScrollArea className="flex-1 p-2 md:p-6 min-h-0">
+                <div className="space-y-2">
                   {messages.map((message, index) => (
                     <motion.div
                       key={message.id}
@@ -146,13 +176,13 @@ export default function Chat() {
                       {message.type === "user" && (
                         <div className="flex justify-end items-start gap-2">
                           <div className="max-w-[80%] md:max-w-[70%]">
-                            <div className="bg-neutral-600 text-white rounded-2xl rounded-tr-md px-4 py-3 border border-neutral-500/30">
+                            <div className="bg-neutral-600 text-white rounded-2xl rounded-tr-md px-3 py-2 border border-neutral-500/30">
                               <p className="text-sm">{message.text}</p>
                             </div>
                             <p className="text-xs text-neutral-500 mt-1 text-right">{message.timestamp}</p>
                           </div>
-                          <Avatar className="h-8 w-8 bg-neutral-600 border border-neutral-500/30 flex items-center justify-center">
-                            <User className="h-4 w-4 text-white" />
+                          <Avatar className="h-7 w-7 bg-neutral-600 border border-neutral-500/30 flex items-center justify-center flex-shrink-0">
+                            <User className="h-3.5 w-3.5 text-white" />
                           </Avatar>
                         </div>
                       )}
@@ -160,16 +190,16 @@ export default function Chat() {
                       {/* Bot Messages */}
                       {message.type === "bot" && (
                         <div className="flex justify-start items-start gap-2">
-                          <Avatar className="h-8 w-8 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center">
-                            <Sparkles className="h-4 w-4 text-neutral-300" />
+                          <Avatar className="h-7 w-7 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center flex-shrink-0">
+                            <Sparkles className="h-3.5 w-3.5 text-neutral-300" />
                           </Avatar>
                           <div className="max-w-[80%] md:max-w-[70%]">
-                            <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-3">
+                            <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-3 py-2">
                               <p className="text-sm">{message.text}</p>
                               
                               {/* Intent Details */}
                               {message.intent && (
-                                <div className="mt-3 bg-neutral-900/50 rounded-lg p-3 border border-neutral-700">
+                                <div className="mt-2 bg-neutral-900/50 rounded-lg p-2 border border-neutral-700">
                                   <div className="flex items-center gap-2 text-xs text-neutral-400">
                                     <Clock className="h-3 w-3 text-white" />
                                     <span>{message.intent.action}</span>
@@ -185,7 +215,7 @@ export default function Chat() {
                       {/* System Messages */}
                       {message.type === "system" && (
                         <div className="flex justify-center">
-                          <div className="bg-neutral-800/50 rounded-full px-4 py-1.5 flex items-center gap-2">
+                          <div className="bg-neutral-800/50 rounded-full px-3 py-1 flex items-center gap-2">
                             <Clock className="h-3 w-3 text-white animate-pulse" />
                             <p className="text-xs text-neutral-400">{message.text}</p>
                           </div>
@@ -195,17 +225,17 @@ export default function Chat() {
                       {/* Attestation Messages */}
                       {message.type === "attestation" && (
                         <div className="flex justify-start items-start gap-2">
-                          <Avatar className="h-8 w-8 bg-green-900/50 border border-green-500/30 flex items-center justify-center">
-                            <CheckCircle2 className="h-4 w-4 text-green-400" />
+                          <Avatar className="h-7 w-7 bg-green-900/50 border border-green-500/30 flex items-center justify-center flex-shrink-0">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
                           </Avatar>
                           <div className="max-w-[80%] md:max-w-[70%]">
-                            <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-2xl rounded-tl-md px-4 py-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <CheckCircle2 className="h-4 w-4 text-white" />
+                            <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-2xl rounded-tl-md px-3 py-2">
+                              <div className="flex items-center gap-2 mb-1">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-white" />
                                 <p className="text-sm text-green-300 font-medium">{message.text}</p>
                               </div>
                               {message.details && (
-                                <div className="space-y-1 pl-6">
+                                <div className="space-y-1 pl-5">
                                   {message.details.map((detail, idx) => (
                                     <p key={idx} className="text-xs text-neutral-300">{detail}</p>
                                   ))}
@@ -226,10 +256,10 @@ export default function Chat() {
                       animate={{ opacity: 1 }}
                       className="flex justify-start items-start gap-2"
                     >
-                      <Avatar className="h-8 w-8 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center">
-                        <Bot className="h-4 w-4 text-neutral-300" />
+                      <Avatar className="h-7 w-7 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center flex-shrink-0">
+                        <Bot className="h-3.5 w-3.5 text-neutral-300" />
                       </Avatar>
-                      <div className="bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3">
+                      <div className="bg-neutral-800 rounded-2xl rounded-tl-md px-3 py-2">
                         <div className="flex gap-1">
                           <div className="w-2 h-2 bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                           <div className="w-2 h-2 bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -243,8 +273,31 @@ export default function Chat() {
                 </div>
               </ScrollArea>
 
-              {/* Input Area */}
-              <div className="p-4 border-t border-neutral-800 bg-neutral-900/50">
+              {/* Quick Actions - Inside chat card above input */}
+              <div className="px-2 py-1.5 border-t border-neutral-800 bg-neutral-900/30 flex-shrink-0">
+                <p className="text-xs text-neutral-500 text-center mb-1">Quick actions:</p>
+                <div className="flex gap-1.5 justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setInputValue("Send 100 cUSD to my friend")}
+                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-2.5 py-0.5 h-6"
+                  >
+                    Send cUSD
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setInputValue("Swap CELO for best price")}
+                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-2.5 py-0.5 h-6"
+                  >
+                    Swap Tokens
+                  </Button>
+                </div>
+              </div>
+
+              {/* Input Area - Fixed at bottom of card */}
+              <div className="p-2 border-t border-neutral-800 bg-neutral-900/50 flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="flex-1 relative">
                     <Input
@@ -253,47 +306,19 @@ export default function Chat() {
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full pr-4 focus:ring-2 focus:ring-neutral-600 focus:border-transparent"
+                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full pr-4 focus:ring-2 focus:ring-neutral-600 focus:border-transparent text-sm h-8"
                     />
                   </div>
                   <Button
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim()}
-                    className="bg-neutral-700 hover:bg-neutral-600 text-white rounded-full h-10 w-10 p-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-neutral-700 hover:bg-neutral-600 text-white rounded-full h-8 w-8 p-0 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                   >
-                    <Send className="h-4 w-4 text-white" />
+                    <Send className="h-3.5 w-3.5 text-white" />
                   </Button>
                 </div>
               </div>
             </Card>
-          </motion.div>
-
-          {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-4"
-          >
-            <p className="text-xs text-neutral-500 text-center mb-2">Quick actions:</p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setInputValue("Send 100 cUSD to my friend")}
-                className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
-              >
-                Send cUSD
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setInputValue("Swap CELO for best price")}
-                className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
-              >
-                Swap Tokens
-              </Button>
-            </div>
           </motion.div>
         </div>
       </div>
