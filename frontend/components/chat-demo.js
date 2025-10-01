@@ -8,6 +8,48 @@ import { BorderBeam } from "@/components/ui/border-beam";
 import { PulsatingButton } from "@/components/ui/pulsating-button";
 import Link from "next/link";
 
+/**
+ * Highlight Tagged Users Component
+ * Parses text and highlights @mentions AND user names with a gradient background
+ * Supports multi-word mentions like "@James ETHGlobal" or "James ETHGlobal"
+ */
+function HighlightedText({ text }) {
+  // List of known user names to highlight (with and without @)
+  const userNames = ['James ETHGlobal', 'derek eth', 'Derek'];
+  
+  // Build regex pattern to match @mentions OR known user names
+  // Pattern: (@[A-Za-z0-9]+(?:\s+[A-Za-z0-9]+)*) OR (exact name matches)
+  const namesPattern = userNames.join('|');
+  const pattern = new RegExp(`(@[A-Za-z0-9]+(?:\\s+[A-Za-z0-9]+)*|${namesPattern})`, 'gi');
+  
+  const parts = text.split(pattern);
+  
+  return (
+    <span>
+      {parts.map((part, index) => {
+        // Check if it's a mention (starts with @) or matches a known user name
+        const isMention = part?.startsWith('@');
+        const isUserName = userNames.some(name => 
+          part?.toLowerCase() === name.toLowerCase()
+        );
+        
+        if (isMention || isUserName) {
+          // Highlight the mention with gradient and subtle glow
+          return (
+            <span
+              key={index}
+              className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 px-1.5 py-0.5 rounded-md font-medium shadow-sm"
+            >
+              {part}
+            </span>
+          );
+        }
+        return <span key={index}>{part}</span>;
+      })}
+    </span>
+  );
+}
+
 // All messages in the conversation - defined outside component to prevent re-creation
 const allMessages = [
     {
@@ -19,7 +61,7 @@ const allMessages = [
     {
       id: 3,
       type: "bot",
-      text: "I'll help you send 100 cUSD to +6016xxxx101. Let me prepare the transaction.",
+      text: "I'll help you send 100 cUSD to derek eth. Let me prepare the transaction.",
       timestamp: "2:34 PM",
       intent: {
         action: "Send",
@@ -214,7 +256,9 @@ export function ChatDemo() {
                 <div className="flex justify-end">
                   <div className="max-w-[80%]">
                     <div className="bg-neutral-600 text-white rounded-2xl rounded-tr-md px-4 py-2.5 border border-neutral-500/30">
-                      <p className="text-sm">{message.text}</p>
+                      <p className="text-sm">
+                        <HighlightedText text={message.text} />
+                      </p>
                     </div>
                     <p className="text-xs text-neutral-500 mt-1 text-right">{message.timestamp}</p>
                   </div>
@@ -243,7 +287,9 @@ export function ChatDemo() {
                       </div>
                     ) : (
                       <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
-                        <p className="text-sm">{message.text}</p>
+                        <p className="text-sm">
+                          <HighlightedText text={message.text} />
+                        </p>
                         
                         {/* Intent Details Card */}
                         {message.intent && (
@@ -340,11 +386,17 @@ export function ChatDemo() {
                   {/* Show clickable style for last message while typing */}
                   {typingMessageId === 9 ? (
                     <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
-                      <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
+                      <p className="text-sm">
+                        <HighlightedText text={typingText} />
+                        <span className="animate-pulse">|</span>
+                      </p>
                     </div>
                   ) : (
                     <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
-                      <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
+                      <p className="text-sm">
+                        <HighlightedText text={typingText} />
+                        <span className="animate-pulse">|</span>
+                      </p>
                     </div>
                   )}
                 </div>
