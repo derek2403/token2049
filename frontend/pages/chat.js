@@ -1109,7 +1109,7 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
                                 </div>
                                 <div className="mt-2 pt-2 border-t border-neutral-700">
                                   <p className="text-neutral-400 text-xs">
-                                    💡 Earn yield on your ETH via Yearn's battle-tested strategies. Fully ERC-4626 compliant.
+                                    💡 Earn yield on your ETH via Yearn&apos;s battle-tested strategies. Fully ERC-4626 compliant.
                                   </p>
                                 </div>
                               </div>
@@ -1166,7 +1166,7 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
                                   <span className="font-medium text-white">{message.action.data.amount} CELO</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-neutral-400">You'll Receive:</span>
+                                  <span className="text-neutral-400">You&apos;ll Receive:</span>
                                   <span className="font-medium text-green-300">~{message.action.data.amount} stCELO</span>
                                 </div>
                                 <div className="flex justify-between">
