@@ -87,6 +87,17 @@
     box-shadow: 0 0 0 8px var(--pulse-color);
     }
   }
+  
+  /* Aurora text animation - infinite left to right movement with shimmer */
+  --animate-aurora: aurora 8s linear infinite;
+  @keyframes aurora {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 400% 50%;
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {

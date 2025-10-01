@@ -2,6 +2,7 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
 import { ChatDemo } from "@/components/chat-demo";
+import { AuroraText } from "@/components/ui/aurora-text";
 
 /**
  * LeftAI Landing Page
@@ -11,9 +12,9 @@ import { ChatDemo } from "@/components/chat-demo";
  */
 export default function Home() {
   return (
-    <div className="font-sans min-h-screen overflow-x-hidden">
+    <div className="font-sans h-[100svh] overflow-hidden overscroll-none md:min-h-screen md:overflow-visible">
       {/* Mobile-optimized Layout with Spotlight Effect */}
-      <div className="min-h-screen w-full flex flex-col bg-black/[0.96] antialiased bg-grid-white/[0.02] relative">
+      <div className="h-full w-full flex flex-col bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden md:overflow-visible">
         {/* Navbar with wallet connection */}
         <Navbar />
         
@@ -24,7 +25,7 @@ export default function Home() {
         />
         
         {/* Main Content Container - Mobile optimized with safe padding */}
-        <div className="flex-1 flex flex-col px-4 py-6 md:px-8 md:py-8 max-w-7xl mx-auto relative z-10 w-full safe-area-inset">
+        <div className="flex-1 flex flex-col px-4 py-6 md:px-8 md:py-8 max-w-7xl mx-auto relative z-10 w-full overflow-hidden safe-area-inset">
           
           {/* Header Section - Compact for mobile */}
           <div className="mb-6 mt-8 md:mt-12">
@@ -35,8 +36,8 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="text-center mb-4"
             >
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
-                Transfers made easy.
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
+                Transfers made <AuroraText colors={["#ffffff", "#a8dadc", "#ffffff", "#e0e0e0", "#ffffff"]} speed={1.5}>easy</AuroraText>.
               </h1>
             </motion.div>
 
@@ -47,7 +48,7 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex-1 flex items-start justify-center w-full"
+            className="flex-1 min-h-0 flex items-start justify-center w-full overflow-hidden"
           >
             <ChatDemo />
           </motion.div>
