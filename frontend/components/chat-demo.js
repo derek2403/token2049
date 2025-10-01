@@ -77,16 +77,22 @@ export function ChatDemo() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [typingText, setTypingText] = useState(""); // Current text being typed
   const [isTyping, setIsTyping] = useState(false);
-  const scrollAreaRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const hasStartedRef = useRef(false); // Track if animation has started
+  const initialRenderRef = useRef(true); // Track initial render
 
-  // Auto-scroll to bottom when new messages arrive
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  // Auto-scroll to bottom when new messages arrive (only after first message)
   useEffect(() => {
-    scrollToBottom();
+    // Skip scroll on initial render
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      return;
+    }
+    
+    // Only scroll after messages have started appearing
+    if (hasStartedRef.current && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages, typingText]);
 
   // Stream messages one by one with typing effect
@@ -100,6 +106,10 @@ export function ChatDemo() {
       const timer = setTimeout(() => {
         setMessages(prev => [...prev, currentMessage]);
         setCurrentIndex(prev => prev + 1);
+        // Enable scrolling only AFTER first message is displayed (on second message)
+        if (currentIndex > 0) {
+          hasStartedRef.current = true;
+        }
       }, currentIndex === 0 ? 500 : 800);
       
       return () => clearTimeout(timer);
@@ -131,7 +141,7 @@ export function ChatDemo() {
   return (
     <Card className="w-full max-w-md mx-auto bg-neutral-900/90 border-neutral-800 backdrop-blur-lg">
       {/* Chat Messages - Scrollable area for mobile */}
-      <ScrollArea className="h-[450px] p-4" ref={scrollAreaRef}>
+      <ScrollArea className="h-[450px] p-4">
         <div className="space-y-4">
           {messages.map((message, index) => (
             <motion.div
@@ -265,7 +275,8 @@ export function ChatDemo() {
             </motion.div>
           )}
           
-          <div ref={messagesEndRef} />
+          {/* Only render scroll target after messages have started */}
+          {hasStartedRef.current && <div ref={messagesEndRef} />}
         </div>
       </ScrollArea>
 
