@@ -12,7 +12,7 @@ export const TOKEN_ADDRESSES = {
   // Celo Mainnet
   42220: {
     CELO: "0x471EcE3750Da237f93B8E339c536989b8978a438", // Native CELO (wrapped)
-    cUSD: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
+    USDC: "0xcebA9300f2b948710d2653dD7B07f33A8B32118C",
     cEUR: "0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73",
   },
   // Celo Alfajores Testnet
@@ -43,8 +43,8 @@ export const transferFundsFunction = {
       },
       tokenSymbol: {
         type: "string",
-        description: "The token symbol to transfer (e.g., 'CELO', 'cUSD', 'cEUR'). Default is 'cUSD'.",
-        enum: ["CELO", "cUSD", "cEUR"],
+        description: "The token symbol to transfer (e.g., 'CELO', 'USDC', 'cUSD', 'cEUR'). Default is 'USDC'.",
+        enum: ["CELO", "USDC", "cUSD", "cEUR"],
       },
     },
     required: ["destinationAddress", "amount", "tokenSymbol"],
@@ -83,8 +83,8 @@ function validateTransferParams({ destinationAddress, amount, tokenSymbol }) {
   }
   
   // Validate token symbol
-  if (!["CELO", "cUSD", "cEUR"].includes(tokenSymbol)) {
-    errors.push("Invalid token symbol. Must be CELO, cUSD, or cEUR");
+  if (!["CELO", "USDC", "cUSD", "cEUR"].includes(tokenSymbol)) {
+    errors.push("Invalid token symbol. Must be CELO, USDC, cUSD, or cEUR");
   }
   
   return {
@@ -193,8 +193,9 @@ export async function executeTokenTransfer({
       throw new Error(`Token ${tokenSymbol} not supported on chain ${chainId}`);
     }
     
-    // Parse amount with 18 decimals (cUSD and cEUR use 18 decimals)
-    const amountInWei = parseUnits(amount, 18);
+    // Parse amount (USDC uses 6 decimals, others use 18)
+    const decimals = tokenSymbol === "USDC" ? 6 : 18;
+    const amountInWei = parseUnits(amount, decimals);
     
     const hash = await writeContract({
       address: tokenAddress,
