@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Spotlight } from "@/components/ui/spotlight";
+import { Spotlight } from "@/components/ui/spotlight-new";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { BorderBeam } from "@/components/ui/border-beam";
 import { 
   Send, 
   CheckCircle2, 
@@ -35,12 +36,14 @@ export default function Chat() {
   
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isMobile, setIsMobile] = useState(false); // Track if screen is mobile size
   const scrollAreaRef = useRef(null);
   const messagesEndRef = useRef(null);
   const prevMessageCountRef = useRef(messages.length); // Track previous message count
 
   // Set a reliable mobile viewport height CSS variable (--vh)
   // This fixes iOS/Chrome mobile where 100vh includes browser UI
+  // Also detects mobile screen size for responsive border beam speed
   useEffect(() => {
     const setViewportHeightVar = () => {
       const viewportHeight = typeof window !== 'undefined' && window.visualViewport
@@ -52,10 +55,21 @@ export default function Chat() {
       }
     };
 
+    // Check if screen is mobile size (width < 768px for faster border beam)
+    const checkMobileSize = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth < 768);
+      }
+    };
+
     setViewportHeightVar();
+    checkMobileSize();
 
     // Update on viewport changes (rotation, URL bar show/hide, etc.)
-    const onResize = () => setViewportHeightVar();
+    const onResize = () => {
+      setViewportHeightVar();
+      checkMobileSize();
+    };
     const onVisibility = () => setViewportHeightVar();
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', onResize);
@@ -145,11 +159,8 @@ export default function Chat() {
           <Navbar />
         </div>
         
-        {/* Spotlight effect - animated background */}
-        <Spotlight
-          className="-top-40 left-0 md:left-60 md:-top-20"
-          fill="white"
-        />
+        {/* Spotlight effect - animated background with left and right gradients */}
+        <Spotlight />
         
         {/* Main Content Container - Flexible height with minimal spacing */}
         <div className="flex-1 flex flex-col px-2 py-1.5 md:px-8 md:py-8 max-w-5xl mx-auto relative z-10 w-full min-h-0">
@@ -161,7 +172,17 @@ export default function Chat() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex-1 flex flex-col w-full max-w-4xl mx-auto min-h-0"
           >
-            <Card className="flex-1 flex flex-col bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg overflow-hidden min-h-0">
+            <Card className="flex-1 flex flex-col bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg overflow-hidden min-h-0 relative">
+              {/* Animated white border beam effect - faster on mobile (1.5x speed) */}
+              <BorderBeam 
+                size={200}
+                duration={isMobile ? 4 : 6}
+                delay={0}
+                colorFrom="#ffffff"
+                colorTo="#ffffff"
+                borderWidth={2}
+              />
+              
               {/* Messages Area - Scrollable within fixed container */}
               <ScrollArea className="flex-1 p-2 md:p-6 min-h-0">
                 <div className="space-y-2">

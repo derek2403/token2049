@@ -60,7 +60,7 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="text-neutral-600 text-xs text-center mt-6 pb-4"
           >
-            <p>© 2025 LeftAI</p>
+            <p>© 2025 LeftAI. All rights reserved.</p>
           </motion.footer>
         </div>
       </div>

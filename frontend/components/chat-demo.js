@@ -417,11 +417,11 @@ export function ChatDemo() {
         <div className="bg-neutral-800/50 rounded-full px-4 py-2.5 flex items-center gap-2">
           <input
             type="text"
-            placeholder="Demo mode - Type your transaction..."
+            placeholder="Start today for free!"
             disabled
             className="flex-1 bg-transparent text-sm text-neutral-500 outline-none cursor-not-allowed"
           />
-          <Badge variant="secondary" className="text-xs">Demo</Badge>
+          <Badge variant="secondary" className="text-xs">Let's Go!</Badge>
         </div>
       </div>
     </Card>
