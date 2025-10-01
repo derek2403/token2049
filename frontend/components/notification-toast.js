@@ -27,15 +27,18 @@ export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState([])
 
   const showNotification = (notification) => {
-    const id = Date.now() + Math.random()
+    const id = notification.id || Date.now() + Math.random()
     const newNotification = { ...notification, id }
     
     setNotifications(prev => [...prev, newNotification])
     
-    // Auto-remove after 8 seconds
-    setTimeout(() => {
-      removeNotification(id)
-    }, 8000)
+    // Only auto-remove non-payment-request notifications after 8 seconds
+    if (notification.type !== 'payment_request') {
+      setTimeout(() => {
+        removeNotification(id)
+      }, 8000)
+    }
+    // Payment requests stay until user dismisses or pays
     
     return id
   }
@@ -76,7 +79,7 @@ function NotificationToastContainer({ notifications, onRemove }) {
  * Individual Toast Notification
  */
 function NotificationToast({ notification, onClose }) {
-  const { type, title, message, amount, tokenSymbol, fromName, fromAddress } = notification
+  const { id: notificationId, type, title, message, amount, tokenSymbol, fromName, fromAddress } = notification
   const { address: userAddress, chain } = useAccount()
   const { writeContractAsync } = useWriteContract()
   const { sendTransactionAsync } = useSendTransaction()
@@ -125,6 +128,19 @@ function NotificationToast({ notification, onClose }) {
       })
 
       if (result.success) {
+        // Remove notification from backend (mark as paid/completed)
+        try {
+          await fetch('/api/notifications', {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ notificationId }),
+          })
+        } catch (error) {
+          console.error('Failed to remove notification:', error)
+        }
+        
         // Close current notification
         onClose()
         
@@ -215,7 +231,21 @@ function NotificationToast({ notification, onClose }) {
                   size="sm"
                   variant="ghost"
                   className="text-neutral-300 hover:text-white text-xs px-2 py-1 h-7"
-                  onClick={onClose}
+                  onClick={async () => {
+                    // Remove from backend when dismissed
+                    try {
+                      await fetch('/api/notifications', {
+                        method: 'DELETE',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ notificationId }),
+                      })
+                    } catch (error) {
+                      console.error('Failed to remove notification:', error)
+                    }
+                    onClose()
+                  }}
                 >
                   Dismiss
                 </Button>
