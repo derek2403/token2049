@@ -207,13 +207,6 @@ export function Navbar() {
                     {link.name}
                   </Link>
                 ))}
-                {/* Mobile wallet section */}
-                <div className="mt-6 pt-6 border-t border-neutral-800/50 space-y-3">
-                  <div className="px-3">
-                    {/* Connect button for mobile menu */}
-                    <ConnectButton />
-                  </div>
-                </div>
               </nav>
             </SheetContent>
           </Sheet>
