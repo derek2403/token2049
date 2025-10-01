@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { useState, useEffect } from "react"
-import { Menu } from "lucide-react"
+import { Menu, Wallet, Copy, Check } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -11,6 +11,13 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { ConnectButton } from "@/components/connect-button"
 
 // Navigation links for the app
@@ -27,11 +34,33 @@ const navLinks = [
 export function Navbar() {
   const router = useRouter()
   const [pathname, setPathname] = useState("")
+  const [isBalanceOpen, setIsBalanceOpen] = useState(false) // Balance modal state
+  const [copiedAddress, setCopiedAddress] = useState(false) // Track if address was copied
   
   // Set pathname on client side only to prevent hydration errors
   useEffect(() => {
     setPathname(router.pathname)
   }, [router.pathname])
+  
+  // Mock user data - Replace with real wallet data later
+  const userData = {
+    name: "Celo Alfajores",
+    phone: "+1 (234) 567-8900",
+    address: "0x45...1162",
+    fullAddress: "0x45aa9A11B0C991C4b3E99e1E5c7b79d7E3D21162",
+    balances: {
+      USDC: "1,250.00",
+      USDT: "850.50",
+      cUSD: "9.49"
+    }
+  }
+  
+  // Copy wallet address to clipboard
+  const copyAddress = () => {
+    navigator.clipboard.writeText(userData.fullAddress)
+    setCopiedAddress(true)
+    setTimeout(() => setCopiedAddress(false), 2000) // Reset after 2 seconds
+  }
   
   return (
     <header className="sticky top-0 z-50 w-full border-b border-neutral-800/50 bg-black/90 backdrop-blur-md supports-[backdrop-filter]:bg-black/70">
@@ -66,9 +95,18 @@ export function Navbar() {
                     {link.name}
                   </Link>
                 ))}
-                {/* Mobile wallet connect section */}
-                <div className="mt-6 pt-6 border-t border-neutral-800/50">
+                {/* Mobile balance and wallet section */}
+                <div className="mt-6 pt-6 border-t border-neutral-800/50 space-y-3">
                   <div className="px-3">
+                    {/* Balance button for mobile */}
+                    <Button 
+                      variant="outline"
+                      onClick={() => setIsBalanceOpen(true)}
+                      className="w-full bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white mb-3"
+                    >
+                      <Wallet className="h-4 w-4 mr-2" />
+                      View Balance
+                    </Button>
                     <ConnectButton />
                   </div>
                 </div>
@@ -82,6 +120,19 @@ export function Navbar() {
               LeftAI
             </span>
           </Link>
+        </div>
+        
+        {/* Mobile Balance Button - Visible on top right */}
+        <div className="md:hidden">
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={() => setIsBalanceOpen(true)}
+            className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+          >
+            <Wallet className="h-4 w-4 mr-1" />
+            Balance
+          </Button>
         </div>
         
         {/* Desktop navigation */}
@@ -101,10 +152,142 @@ export function Navbar() {
           ))}
           
           <div className="flex items-center gap-3">
+            {/* Balance button for desktop */}
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBalanceOpen(true)}
+              className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+            >
+              <Wallet className="h-4 w-4 mr-2" />
+              Balance
+            </Button>
             <ConnectButton />
           </div>
         </nav>
       </div>
+      
+      {/* Balance Modal - Works on both mobile and desktop */}
+      <Dialog open={isBalanceOpen} onOpenChange={setIsBalanceOpen}>
+        <DialogContent className="sm:max-w-md w-[90vw] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Account Balance</DialogTitle>
+            <DialogDescription>
+              View your wallet information and token balances
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* User Information Section */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wide">
+                User Information
+              </h3>
+              
+              {/* Name */}
+              <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
+                <span className="text-sm text-neutral-400">Name</span>
+                <span className="text-sm font-medium text-neutral-100">{userData.name}</span>
+              </div>
+              
+              {/* Phone */}
+              <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
+                <span className="text-sm text-neutral-400">Phone</span>
+                <span className="text-sm font-medium text-neutral-100">{userData.phone}</span>
+              </div>
+              
+              {/* Wallet Address with Copy Button */}
+              <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
+                <span className="text-sm text-neutral-400">Wallet</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-neutral-100 font-mono">{userData.address}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={copyAddress}
+                    className="h-7 w-7 p-0 hover:bg-neutral-700"
+                  >
+                    {copiedAddress ? (
+                      <Check className="h-3.5 w-3.5 text-green-400" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5 text-neutral-400" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Token Balances Section */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wide">
+                Token Balances
+              </h3>
+              
+              {/* USDC Balance */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-br from-blue-900/20 to-blue-800/10 rounded-lg border border-blue-700/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center">
+                    <span className="text-lg font-bold text-blue-400">$</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-100">USDC</p>
+                    <p className="text-xs text-neutral-400">USD Coin</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-semibold text-neutral-100">${userData.balances.USDC}</p>
+                </div>
+              </div>
+              
+              {/* USDT Balance */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-br from-green-900/20 to-green-800/10 rounded-lg border border-green-700/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-600/20 flex items-center justify-center">
+                    <span className="text-lg font-bold text-green-400">₮</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-100">USDT</p>
+                    <p className="text-xs text-neutral-400">Tether USD</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-semibold text-neutral-100">${userData.balances.USDT}</p>
+                </div>
+              </div>
+              
+              {/* cUSD Balance */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 rounded-lg border border-yellow-700/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-yellow-600/20 flex items-center justify-center">
+                    <span className="text-lg font-bold text-yellow-400">¢</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-100">cUSD</p>
+                    <p className="text-xs text-neutral-400">Celo Dollar</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-semibold text-neutral-100">${userData.balances.cUSD}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Total Balance */}
+            <div className="pt-4 border-t border-neutral-700">
+              <div className="flex items-center justify-between p-4 bg-neutral-800/80 rounded-lg">
+                <span className="text-base font-medium text-neutral-300">Total Balance</span>
+                <span className="text-xl font-bold text-neutral-100">
+                  ${(
+                    parseFloat(userData.balances.USDC.replace(/,/g, '')) + 
+                    parseFloat(userData.balances.USDT.replace(/,/g, '')) + 
+                    parseFloat(userData.balances.cUSD.replace(/,/g, ''))
+                  ).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   )
 }
