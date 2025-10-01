@@ -33,8 +33,10 @@ import { useNotifications } from "@/components/notification-toast";
  * Parses text and highlights @mentions and $amounts
  */
 function HighlightedText({ text }) {
-  // Combined pattern to match both @mentions and $amounts
-  const pattern = /(@[A-Za-z\s]+?)(?=\s|$|[^A-Za-z\s])|(\$\d+(?:\.\d+)?)/g;
+  // Combined pattern to match both @mentions (full names) and $amounts
+  // Pattern: @FirstName or @FirstName LastName (max 2 words)
+  // Stops at 2 words to avoid matching regular text after the name
+  const pattern = /(@[A-Za-z]+(?:\s+[A-Za-z]+)?)|(\$\d+(?:\.\d+)?)/g;
   
   const parts = [];
   let lastIndex = 0;
