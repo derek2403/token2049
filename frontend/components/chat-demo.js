@@ -68,7 +68,7 @@ const allMessages = [
   {
     id: 7,
     type: "bot",
-    text: "Ready to make your own transactions? Head to the Chat page to try it yourself!",
+    text: "Ready to make your own transactions? Click here to try it out!",
     timestamp: "2:35 PM",
   },
 ];
@@ -147,32 +147,37 @@ export function ChatDemo() {
     
     // Bot messages type letter by letter
     if (currentMessage.type === "bot") {
-      setIsTyping(true);
-      setTypingMessageId(currentMessage.id); // Track which message is typing
-      const fullText = currentMessage.text;
-      let charIndex = 0;
+      // Add extra delay for the last message (id: 7)
+      const extraDelay = currentMessage.id === 7 ? 300 : 0;
       
-      const typeTimer = setInterval(() => {
-        if (charIndex <= fullText.length) {
-          setTypingText(fullText.slice(0, charIndex));
-          charIndex++;
-          // Scroll while typing to keep up with text
-          if (charIndex % 10 === 0) {
-            scrollToBottom();
+      const delayTimer = setTimeout(() => {
+        setIsTyping(true);
+        setTypingMessageId(currentMessage.id); // Track which message is typing
+        const fullText = currentMessage.text;
+        let charIndex = 0;
+        
+        const typeTimer = setInterval(() => {
+          if (charIndex <= fullText.length) {
+            setTypingText(fullText.slice(0, charIndex));
+            charIndex++;
+            // Scroll while typing to keep up with text
+            if (charIndex % 10 === 0) {
+              scrollToBottom();
+            }
+          } else {
+            clearInterval(typeTimer);
+            setIsTyping(false);
+            setTypingMessageId(null);
+            setTypingText("");
+            setMessages(prev => [...prev, currentMessage]);
+            setCurrentIndex(prev => prev + 1);
+            // Scroll after message is complete
+            setTimeout(scrollToBottom, 50);
           }
-        } else {
-          clearInterval(typeTimer);
-          setIsTyping(false);
-          setTypingMessageId(null);
-          setTypingText("");
-          setMessages(prev => [...prev, currentMessage]);
-          setCurrentIndex(prev => prev + 1);
-          // Scroll after message is complete
-          setTimeout(scrollToBottom, 50);
-        }
-      }, 25); // 25ms per character for faster typing
+        }, 25); // 25ms per character for faster typing
+      }, extraDelay);
       
-      return () => clearInterval(typeTimer);
+      return () => clearTimeout(delayTimer);
     }
   }, [currentIndex, scrollToBottom]); // Include scrollToBottom in deps
 
