@@ -264,13 +264,6 @@ export default function Chat() {
                     <Send className="h-4 w-4 text-white" />
                   </Button>
                 </div>
-                
-                {/* Info Badge */}
-                <div className="mt-2 flex items-center justify-center gap-2">
-                  <Badge variant="secondary" className="text-xs bg-neutral-800 text-neutral-400 border-neutral-700">
-                    AI-Powered Transactions
-                  </Badge>
-                </div>
               </div>
             </Card>
           </motion.div>
