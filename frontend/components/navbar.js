@@ -189,7 +189,14 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80 bg-neutral-950 border-neutral-800/50">
-              <div className="flex items-center gap-2 mb-8">
+              <div className="flex items-center gap-1 mb-8">
+                <Image 
+                  src="/logos/leftAI.png"
+                  alt="LeftAI Logo"
+                  width={28}
+                  height={28}
+                  className="w-7 h-7"
+                />
                 <span className="font-bold text-lg text-neutral-100">
                   LeftAI
                 </span>
@@ -221,7 +228,14 @@ export function Navbar() {
           </Sheet>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+            <Image 
+              src="/logos/leftAI.png"
+              alt="LeftAI Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
             <span className="font-bold text-xl text-neutral-100">
               LeftAI
             </span>
