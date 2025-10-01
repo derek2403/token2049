@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/router"
 import { useState, useEffect } from "react"
 import { Menu, Wallet, Copy, Check } from "lucide-react"
@@ -226,8 +227,14 @@ export function Navbar() {
               {/* USDC Balance */}
               <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-br from-blue-900/20 to-blue-800/10 rounded-lg border border-blue-700/30">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-600/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-base sm:text-lg font-bold text-blue-400">$</span>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <Image 
+                      src="/logos/usd-coin-usdc-logo.svg"
+                      alt="USDC"
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
                     <p className="text-xs sm:text-sm font-medium text-neutral-100">USDC</p>
@@ -242,8 +249,14 @@ export function Navbar() {
               {/* USDT Balance */}
               <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-br from-green-900/20 to-green-800/10 rounded-lg border border-green-700/30">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-600/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-base sm:text-lg font-bold text-green-400">₮</span>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <Image 
+                      src="/logos/USDT_Logo.png"
+                      alt="USDT"
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
                     <p className="text-xs sm:text-sm font-medium text-neutral-100">USDT</p>
@@ -258,8 +271,14 @@ export function Navbar() {
               {/* cUSD Balance */}
               <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 rounded-lg border border-yellow-700/30">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-600/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-base sm:text-lg font-bold text-yellow-400">¢</span>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <Image 
+                      src="/logos/cUSD.png"
+                      alt="cUSD"
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
                     <p className="text-xs sm:text-sm font-medium text-neutral-100">cUSD</p>
