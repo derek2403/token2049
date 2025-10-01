@@ -4,7 +4,7 @@
 
 **Simplifying blockchain interactions: AI-powered transaction assistant with conversational interface**
 
-![LeftAI Landing Page](https://via.placeholder.com/800x400?text=LeftAI+Landing+Page)
+![LeftAI Landing Page](./frontend/public/landingpage.png)
 
 Check out the live demo of **LeftAI**: 👉 [Click here to try it out](https://token2049-two.vercel.app/)
 
