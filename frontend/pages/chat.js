@@ -18,7 +18,7 @@ import {
   ArrowRight,
   AlertCircle
 } from "lucide-react";
-import { useAccount, useWriteContract, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWriteContract, useSendTransaction, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { availableFunctions, executeFunction } from "@/lib/llmActions";
 import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTransfer";
 import { executeStakeCelo, getExplorerUrl as getStakeExplorerUrl } from "@/lib/llmActions/stakeCelo";
@@ -36,6 +36,7 @@ export default function Chat() {
   const { address: userAddress, isConnected, chain } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
+  const publicClient = usePublicClient();
   const { contacts, searchContacts, getContactByName } = useContacts();
   
   const [messages, setMessages] = useState([
@@ -470,6 +471,7 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
         sendTransaction: sendTransactionAsync,
         chainId: chain?.id || 42220,
         userAddress,
+        publicClient,
         onSwapStart: () => {
           const msg = {
             id: Date.now(),
