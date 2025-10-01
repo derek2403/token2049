@@ -18,7 +18,7 @@ const connectors = connectorsForWallets(
     },
   ],
   {
-    appName: "TOKEN2049 Tickets",
+    appName: "Token2049",
     projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "YOUR_PROJECT_ID",
   }
 );

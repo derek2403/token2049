@@ -43,25 +43,14 @@ export default function Home() {
             
             {/* Text Content - Centered */}
             <div className="flex flex-col items-center text-center">
-              {/* Celo Badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 px-3 py-1 mb-6 text-sm font-medium bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20"
-              >
-                <Zap className="h-4 w-4" />
-                Powered by Celo Blockchain
-              </motion.div>
-
               {/* Main heading */}
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                transition={{ duration: 0.5 }}
                 className="text-3xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400"
               >
-                TOKEN2049 Tickets
+                Token2049
               </motion.h1>
               
               {/* Subtitle */}
@@ -110,12 +99,7 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.8 }}
             className="text-neutral-500 text-xs md:text-sm text-center pb-2"
           >
-            <div className="flex gap-4 md:gap-6 justify-center mb-2">
-              <a href="#" className="hover:text-neutral-300 transition">Privacy</a>
-              <a href="#" className="hover:text-neutral-300 transition">Terms</a>
-              <a href="#" className="hover:text-neutral-300 transition">Contact</a>
-            </div>
-            <p>© 2025 TOKEN2049 Tickets. All rights reserved.</p>
+            <p>© 2025 Token2049. All rights reserved.</p>
           </motion.footer>
         </div>
       </div>

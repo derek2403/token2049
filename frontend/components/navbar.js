@@ -43,7 +43,7 @@ export function Navbar() {
             <SheetContent side="left" className="w-80 bg-neutral-900 border-neutral-800">
               <div className="flex items-center gap-2 mb-8">
                 <span className="font-bold text-lg text-white">
-                  TOKEN2049 Tickets
+                  Token2049
                 </span>
               </div>
               {/* Mobile navigation links */}
@@ -69,7 +69,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <span className="font-bold text-xl text-white">
-              TOKEN2049 Tickets
+              Token2049
             </span>
           </Link>
         </div>
