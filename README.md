@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # LeftAI
 
 **Natural Language Crypto Transactions on Celo**
