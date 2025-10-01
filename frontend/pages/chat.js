@@ -25,7 +25,6 @@ import { executeStakeCelo, getExplorerUrl as getStakeExplorerUrl } from "@/lib/l
 import { useContacts } from "@/hooks/useContacts";
 import { ContactAutocomplete } from "@/components/contact-autocomplete";
 import { usdToCelo, parseUsdAmount } from "@/lib/currencyUtils";
-import { useNotifications } from "@/components/notification-toast";
 
 /**
  * Chat Interface Page
@@ -38,7 +37,6 @@ export default function Chat() {
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
   const { contacts, searchContacts, getContactByName } = useContacts();
-  const { showNotification } = useNotifications();
   
   const [messages, setMessages] = useState([
     {
@@ -168,13 +166,17 @@ export default function Chat() {
     setIsTyping(true);
 
     try {
-      // Build conversation history
+      // Build conversation history - filter out function calls and function messages
+      const cleanHistory = conversationHistory.filter(msg => 
+        msg.role !== 'function' && !msg.function_call
+      );
+      
       const newHistory = [
         ...conversationHistory,
         { role: "user", content: currentInput }
       ];
 
-      // Prepare messages for RedPill API (OpenAI format)
+      // Prepare messages for RedPill API (OpenAI format) - use clean history
       const systemPrompt = `You are a helpful AI assistant for crypto transactions on the Celo blockchain. 
 Help users understand and execute their crypto transactions using natural language. 
 Be concise, friendly, and security-conscious.
@@ -246,9 +248,15 @@ You: {"name": "stake_celo", "arguments": {"amount": "100"}}
 User: "I want to save 50 CELO"
 You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
 
+      // Filter API messages to only include valid message formats
+      const cleanApiHistory = cleanHistory
+        .filter(msg => msg.role && msg.content)
+        .slice(-8); // Keep last 8 clean exchanges
+      
       const apiMessages = [
         { role: "system", content: systemPrompt },
-        ...newHistory.slice(-10), // Keep last 10 exchanges for context
+        ...cleanApiHistory,
+        { role: "user", content: currentInput }
       ];
 
       // Call our API route (without native function calling, using JSON in text instead)
@@ -265,10 +273,13 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get AI response');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('API Error:', response.status, errorData);
+        throw new Error(errorData.error || `Failed to get AI response (${response.status})`);
       }
 
       const data = await response.json();
+      console.log('AI Response:', data);
       
       // Handle function call
       if (data.type === 'function_call') {
@@ -293,11 +304,11 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
     } catch (error) {
       console.error('Error sending message:', error);
       
-      // Error message
+      // Error message with more details
       const errorMessage = {
         id: messages.length + 2,
         type: "bot",
-        text: "Sorry, I'm having trouble connecting to the AI service. Please try again.",
+        text: `Sorry, I'm having trouble connecting to the AI service. ${error.message || 'Please try again.'}`,
         timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       };
       
@@ -614,23 +625,52 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
       const senderContact = contacts.find(c => c.wallet.toLowerCase() === userAddress?.toLowerCase());
       const senderName = senderContact?.name || `${userAddress?.substring(0, 6)}...${userAddress?.substring(38)}`;
 
-      // Show toast notification for each recipient (simulating their view)
-      requestData.fromAddresses.forEach((addr) => {
+      // Create notifications for each recipient
+      const notificationsToSave = requestData.fromAddresses.map((addr) => {
         // Find recipient name
         const recipientContact = contacts.find(c => c.wallet.toLowerCase() === addr.toLowerCase());
         const recipientName = recipientContact?.name || `${addr.substring(0, 6)}...${addr.substring(38)}`;
 
-        // Show notification from receiver's perspective
-        showNotification({
+        return {
+          id: `${Date.now()}-${addr}-${Math.random()}`,
           type: 'payment_request',
           title: 'Payment Request Received',
           message: `${senderName} has requested payment from ${recipientName}`,
+          from: userAddress,
+          fromName: senderName,
+          to: addr,
+          toName: recipientName,
           amount: requestData.amounts[addr],
           tokenSymbol: requestData.tokenSymbol,
-          fromName: senderName,
-          fromAddress: userAddress, // Sender's wallet address for payment
-        });
+          description: requestData.description || "Payment request",
+          timestamp: new Date().toISOString(),
+          status: 'pending',
+        };
       });
+
+      // Save notifications to backend (JSON file)
+      try {
+        const response = await fetch('/api/notifications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            notifications: notificationsToSave,
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (!result.success) {
+          throw new Error('Failed to save notifications');
+        }
+
+        console.log('Payment request notifications saved:', result);
+      } catch (apiError) {
+        console.error('Failed to save notifications:', apiError);
+        throw apiError;
+      }
 
       const successMessage = {
         id: Date.now() + 1,
@@ -642,7 +682,7 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
           requestData.splitType === 'equal_split' 
             ? `Each person owes ${requestData.amounts[requestData.fromAddresses[0]]} ${requestData.tokenSymbol}`
             : 'Custom amounts assigned',
-          `Popup notifications shown for all recipients`,
+          `Recipients will receive notifications when they connect their wallets`,
         ],
         timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       };
