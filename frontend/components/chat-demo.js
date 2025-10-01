@@ -3,16 +3,17 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle2, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 
 /**
  * ChatDemo Component
- * Non-interactive chatbot example showing Natural Language Transaction Engine
- * Demonstrates how users can make crypto transactions with simple commands
+ * Streaming chatbot demo showing Natural Language Transaction Engine
+ * Messages stream in one-by-one to demonstrate the flow
  * Optimized for mobile (iPhone 13 Pro Max) PWA
  */
 export function ChatDemo() {
-  // Example conversation flow showing the NL Transaction Engine
-  const messages = [
+  // All messages in the conversation
+  const allMessages = [
     {
       id: 1,
       type: "user",
@@ -71,17 +72,44 @@ export function ChatDemo() {
     },
   ];
 
+  // State for streaming messages
+  const [messages, setMessages] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollAreaRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Stream messages one by one
+  useEffect(() => {
+    if (currentIndex < allMessages.length) {
+      const timer = setTimeout(() => {
+        setMessages(prev => [...prev, allMessages[currentIndex]]);
+        setCurrentIndex(prev => prev + 1);
+      }, currentIndex === 0 ? 500 : 1500); // First message after 500ms, rest after 1500ms
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex]);
+
   return (
     <Card className="w-full max-w-md mx-auto bg-neutral-900/90 border-neutral-800 backdrop-blur-lg">
       {/* Chat Messages - Scrollable area for mobile */}
-      <ScrollArea className="h-[450px] p-4">
+      <ScrollArea className="h-[450px] p-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {messages.map((message, index) => (
             <motion.div
               key={message.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
+              transition={{ duration: 0.3 }}
             >
               {/* User Messages - Right aligned */}
               {message.type === "user" && (
@@ -190,6 +218,7 @@ export function ChatDemo() {
               )}
             </motion.div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
