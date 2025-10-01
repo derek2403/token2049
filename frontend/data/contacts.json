@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Alice Johnson",
+    "phone": "+1234567890",
+    "wallet": "0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6"
+  },
+  {
+    "name": "Bob Smith",
+    "phone": "+1987654321",
+    "wallet": "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"
+  },
+  {
+    "name": "Carol Lee",
+    "phone": "+1122334455",
+    "wallet": "0x41Db99b9A098Af28A06C0af238799c08076Af2f7"
+  }
+]
