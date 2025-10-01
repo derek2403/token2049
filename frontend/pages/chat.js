@@ -294,15 +294,15 @@ export default function Chat() {
                 </div>
               </ScrollArea>
 
-              {/* Quick Actions - Inside chat card above input */}
-              <div className="px-2 py-1.5 border-t border-neutral-800 bg-neutral-900/30 flex-shrink-0">
-                <p className="text-xs text-neutral-500 text-center mb-1">Quick actions:</p>
-                <div className="flex gap-1.5 justify-center">
+              {/* Quick Actions - Compact but clickable */}
+              <div className="px-3 py-2 border-t border-neutral-800 bg-neutral-900/30 flex-shrink-0">
+                <p className="text-xs text-neutral-500 text-center mb-1.5">Quick actions:</p>
+                <div className="flex gap-2 justify-center">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setInputValue("Send 100 cUSD to my friend")}
-                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-2.5 py-0.5 h-6"
+                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8"
                   >
                     Send cUSD
                   </Button>
@@ -310,16 +310,16 @@ export default function Chat() {
                     variant="outline"
                     size="sm"
                     onClick={() => setInputValue("Swap CELO for best price")}
-                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-2.5 py-0.5 h-6"
+                    className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs px-3 py-1.5 h-8"
                   >
                     Swap Tokens
                   </Button>
                 </div>
               </div>
 
-              {/* Input Area - Fixed at bottom of card */}
-              <div className="p-2 border-t border-neutral-800 bg-neutral-900/50 flex-shrink-0">
-                <div className="flex items-center gap-2">
+              {/* Input Area - Bigger typing space */}
+              <div className="p-4 border-t border-neutral-800 bg-neutral-900/50 flex-shrink-0">
+                <div className="flex items-center gap-3">
                   <div className="flex-1 relative">
                     <Input
                       type="text"
@@ -327,15 +327,15 @@ export default function Chat() {
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full pr-4 focus:ring-2 focus:ring-neutral-600 focus:border-transparent text-sm h-8"
+                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full px-5 py-3 focus:ring-2 focus:ring-neutral-600 focus:border-transparent text-base h-12"
                     />
                   </div>
                   <Button
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim()}
-                    className="bg-neutral-700 hover:bg-neutral-600 text-white rounded-full h-8 w-8 p-0 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    className="bg-neutral-700 hover:bg-neutral-600 text-white rounded-full h-12 w-12 p-0 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                   >
-                    <Send className="h-3.5 w-3.5 text-white" />
+                    <Send className="h-5 w-5 text-white" />
                   </Button>
                 </div>
               </div>
