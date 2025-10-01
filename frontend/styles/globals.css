@@ -3,7 +3,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Fix for mobile viewport height - accounts for browser UI */
 :root {
+  --vh: 1vh;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --radius: 0.625rem;
@@ -76,6 +78,15 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --animate-pulse: pulse var(--duration) ease-out infinite;
+  @keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--pulse-color);
+    }
+  50% {
+    box-shadow: 0 0 0 8px var(--pulse-color);
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -185,7 +196,7 @@ body {
     /* Smooth scrolling for mobile */
     scroll-behavior: smooth;
   }
-  
+
   body {
     /* Prevent overscroll bounce effect */
     overscroll-behavior-y: none;
@@ -208,4 +219,54 @@ button, a, input, textarea {
 input, textarea {
   user-select: text;
   -webkit-user-select: text;
+}
+
+/* Fix RainbowKit modal z-index for mobile */
+/* Ensures wallet connection modal appears above all other elements */
+[data-rk] {
+  /* RainbowKit overlay (backdrop) */
+  z-index: 9999 !important;
+}
+
+/* RainbowKit dialog container needs highest z-index */
+[role="dialog"][data-rk] {
+  z-index: 10000 !important;
+}
+
+/* Ensure pointer events work on mobile */
+[data-rk] * {
+  pointer-events: auto !important;
+}
+
+/* Style RainbowKit button for mobile sidebar */
+/* Makes the connected wallet display cleaner in mobile menu */
+@media screen and (max-width: 768px) {
+  /* Style the connect button container */
+  [data-rk] > button {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    padding: 0.75rem 1rem !important;
+    background: transparent !important;
+    border: 1px solid rgba(115, 115, 115, 0.3) !important;
+    border-radius: 0.5rem !important;
+    font-size: 0.9rem !important;
+  }
+  
+  /* Clean up the account button when connected */
+  [data-rk] > button > div {
+    gap: 0.5rem !important;
+  }
+  
+  /* Hide the emoji/avatar in mobile menu for cleaner look */
+  [data-rk] > button img,
+  [data-rk] > button svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+  
+  /* Make address text more readable */
+  [data-rk] > button div[color] {
+    font-size: 0.875rem !important;
+    color: #a3a3a3 !important;
+  }
 }

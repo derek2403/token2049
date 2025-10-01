@@ -1,73 +1,131 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CheckCircle2, Clock } from "lucide-react";
+import { Clock, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { BorderBeam } from "@/components/ui/border-beam";
+import { PulsatingButton } from "@/components/ui/pulsating-button";
+import Link from "next/link";
+
+/**
+ * Highlight Tagged Users Component
+ * Parses text and highlights @mentions AND user names with a gradient background
+ * Supports multi-word mentions like "@James ETHGlobal" or "James ETHGlobal"
+ */
+function HighlightedText({ text }) {
+  // List of known user names to highlight (with and without @)
+  const userNames = ['James ETHGlobal', 'derek eth', 'Derek'];
+  
+  // Build regex pattern to match exact usernames with or without @
+  // Escape special chars and create pattern for @name or name
+  const escapedNames = userNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const withAt = escapedNames.map(name => '@' + name);
+  const allPatterns = [...withAt, ...escapedNames].join('|');
+  const pattern = new RegExp(`(${allPatterns})`, 'gi');
+  
+  const parts = text.split(pattern);
+  
+  return (
+    <span>
+      {parts.map((part, index) => {
+        if (!part) return null;
+        
+        // Check if it's a mention (starts with @) or matches a known user name
+        const trimmedPart = part.trim();
+        const isMention = trimmedPart.startsWith('@');
+        const isUserName = userNames.some(name => 
+          trimmedPart.toLowerCase() === name.toLowerCase() ||
+          trimmedPart.toLowerCase() === '@' + name.toLowerCase()
+        );
+        
+        if (isMention || isUserName) {
+          // Highlight the mention with gradient and subtle glow
+          return (
+            <span
+              key={index}
+              className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 px-1.5 py-0.5 rounded-md font-medium shadow-sm"
+            >
+              {part}
+            </span>
+          );
+        }
+        return <span key={index}>{part}</span>;
+      })}
+    </span>
+  );
+}
 
 // All messages in the conversation - defined outside component to prevent re-creation
 const allMessages = [
     {
       id: 1,
       type: "user",
-      text: "Send 100 cUSD to my brother",
+      text: "Send 100 cUSD to @derek eth",
       timestamp: "2:34 PM",
-    },
-    {
-      id: 2,
-      type: "system",
-      text: "Processing your request...",
-      timestamp: "2:34 PM",
-      status: "processing",
     },
     {
       id: 3,
       type: "bot",
-      text: "I'll help you send 100 cUSD. Let me prepare the transaction.",
+      text: "I'll help you send 100 cUSD to @derek eth. Let me prepare the transaction.",
       timestamp: "2:34 PM",
       intent: {
         action: "Send",
         amount: "100 cUSD",
         recipient: "0x742d...4f2a",
         estimatedFee: "0.001 CELO",
+        txId: "0x8a3f...91c2",
       },
-    },
-    {
-      id: 4,
-      type: "attestation",
-      text: "EigenLayer AVS verified",
-      details: [
-        "Token: cUSD ✓",
-        "Amount: 100 ✓",
-        "Recipient: 0x742d...4f2a ✓",
-        "Fee within limits ✓",
-      ],
-      timestamp: "2:34 PM",
     },
     {
       id: 5,
       type: "user",
-      text: "Swap my CELO for the best price on Ubeswap",
+      text: "Request 5 cUSD from @James ETHGlobal",
       timestamp: "2:35 PM",
     },
     {
       id: 6,
       type: "bot",
-      text: "Found best rate on Ubeswap. Ready to swap your CELO.",
+      text: "Payment request sent to @James ETHGlobal. He'll receive a notification to approve your request.",
       timestamp: "2:35 PM",
       intent: {
-        action: "Swap",
-        from: "5 CELO",
-        to: "~425 cUSD",
-        route: "Ubeswap",
-      slippage: "0.5%",
-    },
+        action: "Request Payment",
+        amount: "5 cUSD",
+        from: "James ETHGlobal",
+        status: "Pending Approval",
+        txId: "0x2b7e...45d9",
+      },
+  },
+  {
+    id: 7,
+    type: "bot",
+    text: "✅ Payment completed! @James ETHGlobal has approved and sent you 5 cUSD.",
+    timestamp: "2:36 PM",
+      intent: {
+        action: "Payment Received",
+        amount: "5 cUSD",
+        from: "James ETHGlobal",
+        status: "Completed",
+        txId: "0x2b7e...45d9",
+      },
+  },
+  {
+    id: 8,
+    type: "user",
+    text: "This is amazing! How can I try this out?",
+    timestamp: "2:36 PM",
+  },
+  {
+    id: 9,
+    type: "bot",
+    text: "Glad you asked! You can try it out here!",
+    timestamp: "2:36 PM",
   },
 ];
 
 /**
  * ChatDemo Component
- * Streaming chatbot demo showing Natural Language Transaction Engine
+ * Streaming chatbot demo showing LeftAI
  * Messages stream in one-by-one to demonstrate the flow
  * Optimized for mobile (iPhone 13 Pro Max) PWA
  */
@@ -77,9 +135,28 @@ export function ChatDemo() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [typingText, setTypingText] = useState(""); // Current text being typed
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef(null);
+  const [typingMessageId, setTypingMessageId] = useState(null); // Track which message is typing
+  const scrollAreaRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const hasStartedRef = useRef(false); // Track if animation has started
   const initialRenderRef = useRef(true); // Track initial render
+
+  // Smooth scroll function - scrolls the chat to bottom
+  // instant: true for immediate scroll (user messages), false for smooth (bot messages)
+  const scrollToBottom = useCallback((instant = false) => {
+    if (scrollAreaRef.current) {
+      // Use requestAnimationFrame for smoother, faster scrolling
+      requestAnimationFrame(() => {
+        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: instant ? 'auto' : 'smooth'
+          });
+        }
+      });
+    }
+  }, []);
 
   // Auto-scroll to bottom when new messages arrive (only after first message)
   useEffect(() => {
@@ -90,10 +167,11 @@ export function ChatDemo() {
     }
     
     // Only scroll after messages have started appearing
-    if (hasStartedRef.current && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    // Only trigger on messages change, not typingText to reduce lag
+    if (hasStartedRef.current) {
+      scrollToBottom();
     }
-  }, [messages, typingText]);
+  }, [messages]); // Removed typingText from dependencies
 
   // Stream messages one by one with typing effect
   useEffect(() => {
@@ -110,39 +188,68 @@ export function ChatDemo() {
         if (currentIndex > 0) {
           hasStartedRef.current = true;
         }
-      }, currentIndex === 0 ? 500 : 800);
+        // All messages scroll smoothly for better mobile performance
+        setTimeout(() => scrollToBottom(false), 10);
+      }, currentIndex === 0 ? 700 : 600); // Added 500ms delay to first message
       
       return () => clearTimeout(timer);
     }
     
     // Bot messages type letter by letter
     if (currentMessage.type === "bot") {
-      setIsTyping(true);
-      const fullText = currentMessage.text;
-      let charIndex = 0;
+      // Add extra delay for all bot messages
+      const extraDelay = 300;
       
-      const typeTimer = setInterval(() => {
-        if (charIndex <= fullText.length) {
-          setTypingText(fullText.slice(0, charIndex));
-          charIndex++;
-        } else {
-          clearInterval(typeTimer);
-          setIsTyping(false);
-          setTypingText("");
-          setMessages(prev => [...prev, currentMessage]);
-          setCurrentIndex(prev => prev + 1);
-        }
-      }, 30); // 30ms per character for smooth typing
+      const delayTimer = setTimeout(() => {
+        setIsTyping(true);
+        setTypingMessageId(currentMessage.id); // Track which message is typing
+        const fullText = currentMessage.text;
+        let charIndex = 0;
+        
+        const typeTimer = setInterval(() => {
+          if (charIndex <= fullText.length) {
+            setTypingText(fullText.slice(0, charIndex));
+            charIndex++;
+            // Scroll less frequently while typing to reduce lag
+            if (charIndex % 20 === 0) {
+              scrollToBottom();
+            }
+          } else {
+            clearInterval(typeTimer);
+            setIsTyping(false);
+            setTypingMessageId(null);
+            setTypingText("");
+            setMessages(prev => [...prev, currentMessage]);
+            setCurrentIndex(prev => prev + 1);
+            // Scroll after message is complete
+            setTimeout(scrollToBottom, 100);
+          }
+        }, 25); // 25ms per character for faster typing
+      }, extraDelay);
       
-      return () => clearInterval(typeTimer);
+      return () => clearTimeout(delayTimer);
     }
-  }, [currentIndex]); // Removed allMessages from deps since it's now constant
+  }, [currentIndex, scrollToBottom]); // Include scrollToBottom in deps
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-neutral-900/90 border-neutral-800 backdrop-blur-lg">
+    <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg relative overflow-hidden">
+      {/* Border Beam Effects - Dual animated beams */}
+      <BorderBeam 
+        duration={6}
+        size={400}
+        className="from-transparent via-neutral-500 to-transparent"
+      />
+      <BorderBeam 
+        duration={6}
+        delay={3}
+        size={400}
+        borderWidth={2}
+        className="from-transparent via-neutral-600 to-transparent"
+      />
+      
       {/* Chat Messages - Scrollable area for mobile */}
-      <ScrollArea className="h-[450px] p-4">
-        <div className="space-y-4">
+      <ScrollArea ref={scrollAreaRef} className="h-[450px] p-4">
+        <div ref={messagesContainerRef} className="space-y-4">
           {messages.map((message, index) => (
             <motion.div
               key={message.id}
@@ -154,8 +261,10 @@ export function ChatDemo() {
               {message.type === "user" && (
                 <div className="flex justify-end">
                   <div className="max-w-[80%]">
-                    <div className="bg-blue-600 text-white rounded-2xl rounded-tr-md px-4 py-2.5">
-                      <p className="text-sm">{message.text}</p>
+                    <div className="bg-neutral-600 text-white rounded-2xl rounded-tr-md px-4 py-2.5 border border-neutral-500/30">
+                      <p className="text-sm">
+                        <HighlightedText text={message.text} />
+                      </p>
                     </div>
                     <p className="text-xs text-neutral-500 mt-1 text-right">{message.timestamp}</p>
                   </div>
@@ -166,12 +275,31 @@ export function ChatDemo() {
               {message.type === "bot" && (
                 <div className="flex justify-start">
                   <div className="max-w-[85%]">
-                    <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
-                      <p className="text-sm">{message.text}</p>
-                      
-                      {/* Intent Details Card */}
-                      {message.intent && (
-                        <div className="mt-3 bg-neutral-900/50 rounded-lg p-3 space-y-2 border border-neutral-700">
+                    {/* Clickable CTA message for the last message */}
+                    {message.id === 9 ? (
+                      <div>
+                        <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
+                          <p className="text-sm mb-3">{message.text}</p>
+                          <Link href="/chat">
+                            <PulsatingButton 
+                              pulseColor="rgba(255, 255, 255, 0.3)"
+                              duration="2s"
+                              className="w-full bg-white hover:bg-gray-100 text-black transition-colors font-bold"
+                            >
+                              Try it Now →
+                            </PulsatingButton>
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
+                        <p className="text-sm">
+                          <HighlightedText text={message.text} />
+                        </p>
+                        
+                        {/* Intent Details Card */}
+                        {message.intent && (
+                          <div className="mt-3 bg-neutral-900/50 rounded-lg p-3 space-y-2 border border-neutral-700">
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-neutral-400">Action</span>
                             <span className="text-white font-medium">{message.intent.action}</span>
@@ -218,9 +346,22 @@ export function ChatDemo() {
                               <span className="text-neutral-300">{message.intent.slippage}</span>
                             </div>
                           )}
-                        </div>
-                      )}
-                    </div>
+                          {message.intent.status && (
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-neutral-400">Status</span>
+                              <span className="text-white font-medium">{message.intent.status}</span>
+                            </div>
+                          )}
+                          {message.intent.txId && (
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-neutral-400">Transaction ID</span>
+                              <span className="text-blue-400 font-mono text-[10px]">{message.intent.txId}</span>
+                            </div>
+                          )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <p className="text-xs text-neutral-500 mt-1">{message.timestamp}</p>
                   </div>
                 </div>
@@ -236,25 +377,6 @@ export function ChatDemo() {
                 </div>
               )}
 
-              {/* EigenLayer Attestation Messages */}
-              {message.type === "attestation" && (
-                <div className="flex justify-start">
-                  <div className="max-w-[85%]">
-                    <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-2xl rounded-tl-md px-4 py-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle2 className="h-4 w-4 text-white" />
-                        <p className="text-sm text-green-300 font-medium">{message.text}</p>
-                      </div>
-                      <div className="space-y-1 pl-6">
-                        {message.details.map((detail, idx) => (
-                          <p key={idx} className="text-xs text-neutral-300">{detail}</p>
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-1">{message.timestamp}</p>
-                  </div>
-                </div>
-              )}
             </motion.div>
           ))}
           
@@ -267,16 +389,26 @@ export function ChatDemo() {
             >
               <div className="flex justify-start">
                 <div className="max-w-[85%]">
-                  <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
-                    <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
-                  </div>
+                  {/* Show clickable style for last message while typing */}
+                  {typingMessageId === 9 ? (
+                    <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
+                      <p className="text-sm">
+                        <HighlightedText text={typingText} />
+                        <span className="animate-pulse">|</span>
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
+                      <p className="text-sm">
+                        <HighlightedText text={typingText} />
+                        <span className="animate-pulse">|</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
           )}
-          
-          {/* Only render scroll target after messages have started */}
-          {hasStartedRef.current && <div ref={messagesEndRef} />}
         </div>
       </ScrollArea>
 
@@ -285,11 +417,11 @@ export function ChatDemo() {
         <div className="bg-neutral-800/50 rounded-full px-4 py-2.5 flex items-center gap-2">
           <input
             type="text"
-            placeholder="Demo mode - Type your transaction..."
+            placeholder="Start today for free!"
             disabled
             className="flex-1 bg-transparent text-sm text-neutral-500 outline-none cursor-not-allowed"
           />
-          <Badge variant="secondary" className="text-xs">Demo</Badge>
+          <Badge variant="secondary" className="text-xs">Let's Go!</Badge>
         </div>
       </div>
     </Card>

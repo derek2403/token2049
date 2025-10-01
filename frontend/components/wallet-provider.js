@@ -1,8 +1,14 @@
 "use client";
 
-import { RainbowKitProvider, connectorsForWallets } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, connectorsForWallets, darkTheme } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
+import { 
+  injectedWallet,
+  metaMaskWallet,
+  walletConnectWallet,
+  trustWallet,
+  rainbowWallet
+} from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { WagmiProvider, createConfig, http, useConnect } from "wagmi";
@@ -35,15 +41,27 @@ const celoSepolia = defineChain({
 
 // Configure wallet connectors for RainbowKit
 // This sets up the available wallet options for users
+// Including mobile-friendly wallets that use WalletConnect
 const connectors = connectorsForWallets(
   [
     {
       groupName: "Recommended",
-      wallets: [injectedWallet],
+      wallets: [
+        metaMaskWallet,      // MetaMask - works on mobile via WalletConnect
+        walletConnectWallet, // Generic WalletConnect - supports many mobile wallets
+        injectedWallet,      // Browser wallets (desktop extensions)
+      ],
+    },
+    {
+      groupName: "More Options",
+      wallets: [
+        trustWallet,     // Trust Wallet (popular mobile wallet)
+        rainbowWallet,   // Rainbow Wallet
+      ],
     },
   ],
   {
-    appName: "Token2049",
+    appName: "LeftAI",
     projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "YOUR_PROJECT_ID",
   }
 );
@@ -98,7 +116,16 @@ export function WalletProvider({ children }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider showTestnets={true}>
+        <RainbowKitProvider
+          showTestnets={true}
+          theme={darkTheme({
+            accentColor: '#404040', // neutral-700 for consistency
+            accentColorForeground: 'white',
+            borderRadius: 'medium',
+            fontStack: 'system',
+            overlayBlur: 'small',
+          })}
+        >
           <WalletProviderInner>{children}</WalletProviderInner>
         </RainbowKitProvider>
       </QueryClientProvider>
