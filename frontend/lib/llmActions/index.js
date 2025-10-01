@@ -4,18 +4,20 @@
  */
 
 import { transferFundsFunction, prepareTransferFunds, TOKEN_ADDRESSES } from "./executeTransfer";
+import { requestPaymentFunction, prepareRequestPayment } from "./requestPayment";
 
 /**
  * All available functions that the AI agent can call
  * Add new functions here as you expand the agent's capabilities
  */
-export const availableFunctions = [transferFundsFunction];
+export const availableFunctions = [transferFundsFunction, requestPaymentFunction];
 
 /**
  * Function executor - maps function names to their implementations
  */
 export const functionExecutors = {
   transfer_funds: prepareTransferFunds,
+  request_payment: prepareRequestPayment,
   // Add more function executors here as you add new capabilities
 };
 
