@@ -21,7 +21,7 @@ import {
 import { useAccount, useWriteContract, useSendTransaction, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { availableFunctions, executeFunction } from "@/lib/llmActions";
 import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTransfer";
-import { executeStakeCelo, getExplorerUrl as getStakeExplorerUrl } from "@/lib/llmActions/stakeCelo";
+import { executeStakeEth, getExplorerUrl as getStakeEthExplorerUrl } from "@/lib/llmActions/stakeEth";
 import { useContacts } from "@/hooks/useContacts";
 import { ContactAutocomplete } from "@/components/contact-autocomplete";
 import { usdToCelo, parseUsdAmount } from "@/lib/currencyUtils";
@@ -199,11 +199,6 @@ AVAILABLE FUNCTIONS:
 2. REQUEST PAYMENT - When the user wants to REQUEST money FROM someone(s), split bills, or ask for payment:
 {"name": "request_payment", "arguments": {"fromAddresses": ["0x...", "0x..."], "totalAmount": "number", "tokenSymbol": "CELO", "description": "optional text"}}
 
-3. STAKE CELO - When the user wants to stake/save/earn rewards/earn yield/manage extra money:
-{"name": "stake_celo", "arguments": {"amount": "number"}}
-CRITICAL: If user mentions "save", "extra money", "earn rewards", "earn yield", "stake", "passive income" → USE this function DIRECTLY
-DO NOT provide instructions or explanations, IMMEDIATELY call stake_celo function
-
 PAYMENT REQUEST RULES:
 - CRITICAL: When user says "I paid X with @User1 and @User2", there are 3 people TOTAL (user + 2 others)
 - Each person's share = Total / Number of people INCLUDING the user
@@ -241,13 +236,7 @@ Analysis: 3 people total (user + Alice + Bob), 99 / 3 = 33 CELO per person, requ
 You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "33", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "33"}, "tokenSymbol": "CELO", "description": "dinner"}}
 
 User: "I have extra money, help me earn rewards"
-You: How much CELO would you like to stake to earn rewards?
-
-User: "Stake 100 CELO"
-You: {"name": "stake_celo", "arguments": {"amount": "100"}}
-
-User: "I want to save 50 CELO"
-You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
+You: I can help you transfer funds or split bills. What would you like to do?`;
 
       // Filter API messages to only include valid message formats
       const cleanApiHistory = cleanHistory
@@ -451,7 +440,74 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
     }
   };
 
-  // Handle staking execution
+  // Handle ETH staking execution
+  const handleExecuteStakeEth = async (stakeData) => {
+    const { amount } = stakeData;
+    
+    // Show processing message
+    const processingMessage = {
+      id: Date.now(),
+      type: "system",
+      text: "Depositing ETH into Yearn vault... This requires 2 transactions: Approve WETH and Deposit.",
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    };
+    setMessages(prev => [...prev, processingMessage]);
+    
+    try {
+      const result = await executeStakeEth({
+        amount,
+        writeContract: writeContractAsync,
+        chainId: chain?.id || 42220,
+        userAddress,
+      });
+      
+      if (result.success) {
+        setPendingTxHash(result.hash);
+        
+        const explorerUrl = getStakeEthExplorerUrl(chain?.id || 42220, result.hash);
+        
+        const pendingMessage = {
+          id: Date.now() + 1,
+          type: "system",
+          text: `ETH staking complete! Waiting for blockchain confirmation...`,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, pendingMessage]);
+        
+        const stakeLinkMessage = {
+          id: Date.now() + 2,
+          type: "bot",
+          text: `View transaction: ${explorerUrl}`,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, stakeLinkMessage]);
+        
+      } else {
+        const errorMessage = {
+          id: Date.now() + 1,
+          type: "bot",
+          text: result.userRejected 
+            ? "ETH staking was cancelled. Let me know if you'd like to try again!"
+            : `ETH staking failed: ${result.error}`,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
+      
+    } catch (error) {
+      console.error('ETH staking execution error:', error);
+      
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: "bot",
+        text: "Sorry, there was an error executing the ETH stake. Please try again.",
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
+  // Handle CELO staking execution (deprecated - keeping for backward compatibility)
   const handleExecuteStake = async (stakeData) => {
     const { amount } = stakeData;
     
@@ -889,7 +945,73 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
                         </div>
                       )}
 
-                      {/* Action Messages (Stake CELO Confirmation) */}
+                      {/* Action Messages (Stake ETH Confirmation) */}
+                      {message.type === "action" && message.action?.type === "stake_eth" && (
+                        <div className="flex justify-start items-start gap-2">
+                          <Avatar className="h-8 w-8 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
+                            <Sparkles className="h-4 w-4 text-white" />
+                          </Avatar>
+                          <div className="max-w-[80%] md:max-w-[70%]">
+                            <div className="bg-gradient-to-br from-blue-900/30 to-indigo-900/30 border border-blue-500/30 rounded-2xl rounded-tl-md px-4 py-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Sparkles className="h-4 w-4 text-white" />
+                                <p className="text-sm text-blue-300 font-medium">Stake ETH via Yearn Vault</p>
+                              </div>
+                              
+                              <div className="space-y-2 text-xs text-neutral-300 mb-3">
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">Amount to Stake:</span>
+                                  <span className="font-medium text-white">{message.action.data.amount} ETH</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">Vault:</span>
+                                  <span className="text-xs">Yearn V3 WETH Vault</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">Network:</span>
+                                  <span className="text-xs">Celo Mainnet</span>
+                                </div>
+                                <div className="mt-2 pt-2 border-t border-neutral-700">
+                                  <p className="text-neutral-400 text-xs">
+                                    💡 Earn yield on your ETH via Yearn's battle-tested strategies. Fully ERC-4626 compliant.
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs"
+                                  disabled={isConfirming}
+                                  onClick={() => handleExecuteStakeEth(message.action.args)}
+                                >
+                                  {isConfirming ? 'Staking...' : 'Confirm Stake'}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700 text-xs"
+                                  disabled={isConfirming}
+                                  onClick={() => {
+                                    const cancelMsg = {
+                                      id: messages.length + 1,
+                                      type: "bot",
+                                      text: "Staking cancelled. How else can I help you?",
+                                      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                                    };
+                                    setMessages(prev => [...prev, cancelMsg]);
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-neutral-500 mt-1">{message.timestamp}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Messages (Stake CELO Confirmation) - DEPRECATED */}
                       {message.type === "action" && message.action?.type === "stake_celo" && (
                         <div className="flex justify-start items-start gap-2">
                           <Avatar className="h-8 w-8 bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center">
@@ -1128,10 +1250,10 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputValue("I want to stake 100 CELO to earn rewards")}
+                onClick={() => setInputValue("Request $15 from @Alice Johnson and @Bob Smith for lunch")}
                 className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
               >
-                Stake CELO
+                Split Bill
               </Button>
             </div>
           </motion.div>

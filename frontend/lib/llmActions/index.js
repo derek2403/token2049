@@ -5,13 +5,12 @@
 
 import { transferFundsFunction, prepareTransferFunds, TOKEN_ADDRESSES } from "./executeTransfer";
 import { requestPaymentFunction, prepareRequestPayment } from "./requestPayment";
-import { stakeCeloFunction, prepareStakeCelo } from "./stakeCelo";
 
 /**
  * All available functions that the AI agent can call
  * Add new functions here as you expand the agent's capabilities
  */
-export const availableFunctions = [transferFundsFunction, requestPaymentFunction, stakeCeloFunction];
+export const availableFunctions = [transferFundsFunction, requestPaymentFunction];
 
 /**
  * Function executor - maps function names to their implementations
@@ -19,7 +18,6 @@ export const availableFunctions = [transferFundsFunction, requestPaymentFunction
 export const functionExecutors = {
   transfer_funds: prepareTransferFunds,
   request_payment: prepareRequestPayment,
-  stake_celo: prepareStakeCelo,
   // Add more function executors here as you add new capabilities
 };
 
