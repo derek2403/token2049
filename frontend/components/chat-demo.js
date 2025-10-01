@@ -118,7 +118,7 @@ const allMessages = [
   {
     id: 9,
     type: "bot",
-    text: "Ready to make your own transactions?",
+    text: "Glad you asked! You can try it out here!",
     timestamp: "2:36 PM",
   },
 ];
