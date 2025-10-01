@@ -113,9 +113,6 @@ export default function Chat() {
             <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
               Natural Language Chat
             </h1>
-            <p className="text-xs md:text-sm text-neutral-400">
-              Chat with AI to make crypto transactions
-            </p>
           </motion.div>
 
           {/* Chat Container */}
@@ -257,13 +254,6 @@ export default function Chat() {
                   >
                     <Send className="h-4 w-4" />
                   </Button>
-                </div>
-                
-                {/* Info Badge */}
-                <div className="mt-2 flex items-center justify-center gap-2">
-                  <Badge variant="secondary" className="text-xs bg-neutral-800 text-neutral-400 border-neutral-700">
-                    AI-Powered Transactions
-                  </Badge>
                 </div>
               </div>
             </Card>
