@@ -139,7 +139,7 @@ export function ChatDemo() {
   }, [currentIndex]); // Removed allMessages from deps since it's now constant
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-neutral-900/90 border-neutral-800 backdrop-blur-lg">
+    <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg">
       {/* Chat Messages - Scrollable area for mobile */}
       <ScrollArea className="h-[450px] p-4">
         <div className="space-y-4">
@@ -154,7 +154,7 @@ export function ChatDemo() {
               {message.type === "user" && (
                 <div className="flex justify-end">
                   <div className="max-w-[80%]">
-                    <div className="bg-blue-600 text-white rounded-2xl rounded-tr-md px-4 py-2.5">
+                    <div className="bg-neutral-600 text-white rounded-2xl rounded-tr-md px-4 py-2.5 border border-neutral-500/30">
                       <p className="text-sm">{message.text}</p>
                     </div>
                     <p className="text-xs text-neutral-500 mt-1 text-right">{message.timestamp}</p>

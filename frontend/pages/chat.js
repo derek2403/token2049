@@ -125,7 +125,7 @@ export default function Chat() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex-1 flex flex-col w-full max-w-4xl mx-auto"
           >
-            <Card className="flex-1 flex flex-col bg-neutral-900/90 border-neutral-800 backdrop-blur-lg overflow-hidden">
+            <Card className="flex-1 flex flex-col bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg overflow-hidden">
               {/* Messages Area */}
               <ScrollArea className="flex-1 p-4 md:p-6">
                 <div className="space-y-4">
@@ -140,12 +140,12 @@ export default function Chat() {
                       {message.type === "user" && (
                         <div className="flex justify-end items-start gap-2">
                           <div className="max-w-[80%] md:max-w-[70%]">
-                            <div className="bg-gradient-to-br from-blue-600 to-blue-500 text-white rounded-2xl rounded-tr-md px-4 py-3">
+                            <div className="bg-neutral-600 text-white rounded-2xl rounded-tr-md px-4 py-3 border border-neutral-500/30">
                               <p className="text-sm">{message.text}</p>
                             </div>
                             <p className="text-xs text-neutral-500 mt-1 text-right">{message.timestamp}</p>
                           </div>
-                          <Avatar className="h-8 w-8 bg-blue-600 flex items-center justify-center">
+                          <Avatar className="h-8 w-8 bg-neutral-600 border border-neutral-500/30 flex items-center justify-center">
                             <User className="h-4 w-4 text-white" />
                           </Avatar>
                         </div>
@@ -154,8 +154,8 @@ export default function Chat() {
                       {/* Bot Messages */}
                       {message.type === "bot" && (
                         <div className="flex justify-start items-start gap-2">
-                          <Avatar className="h-8 w-8 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                            <Sparkles className="h-4 w-4 text-white" />
+                          <Avatar className="h-8 w-8 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center">
+                            <Sparkles className="h-4 w-4 text-neutral-300" />
                           </Avatar>
                           <div className="max-w-[80%] md:max-w-[70%]">
                             <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-3">
@@ -189,8 +189,8 @@ export default function Chat() {
                       {/* Attestation Messages */}
                       {message.type === "attestation" && (
                         <div className="flex justify-start items-start gap-2">
-                          <Avatar className="h-8 w-8 bg-green-600 flex items-center justify-center">
-                            <CheckCircle2 className="h-4 w-4 text-white" />
+                          <Avatar className="h-8 w-8 bg-green-900/50 border border-green-500/30 flex items-center justify-center">
+                            <CheckCircle2 className="h-4 w-4 text-green-400" />
                           </Avatar>
                           <div className="max-w-[80%] md:max-w-[70%]">
                             <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-2xl rounded-tl-md px-4 py-3">
@@ -220,8 +220,8 @@ export default function Chat() {
                       animate={{ opacity: 1 }}
                       className="flex justify-start items-start gap-2"
                     >
-                      <Avatar className="h-8 w-8 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                        <Bot className="h-4 w-4 text-white" />
+                      <Avatar className="h-8 w-8 bg-neutral-700 border border-neutral-600/30 flex items-center justify-center">
+                        <Bot className="h-4 w-4 text-neutral-300" />
                       </Avatar>
                       <div className="bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3">
                         <div className="flex gap-1">
@@ -247,13 +247,13 @@ export default function Chat() {
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full pr-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 rounded-full pr-4 focus:ring-2 focus:ring-neutral-600 focus:border-transparent"
                     />
                   </div>
                   <Button
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim()}
-                    className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-full h-10 w-10 p-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-neutral-700 hover:bg-neutral-600 text-white rounded-full h-10 w-10 p-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send className="h-4 w-4 text-white" />
                   </Button>
