@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle2, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
+import { BorderBeam } from "@/components/ui/border-beam";
 
 // All messages in the conversation - defined outside component to prevent re-creation
 const allMessages = [
@@ -139,7 +140,16 @@ export function ChatDemo() {
   }, [currentIndex]); // Removed allMessages from deps since it's now constant
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg">
+    <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg relative overflow-hidden">
+      {/* Border Beam Effect */}
+      <BorderBeam 
+        size={200}
+        duration={8}
+        delay={2}
+        colorFrom="#737373"
+        colorTo="#525252"
+      />
+      
       {/* Chat Messages - Scrollable area for mobile */}
       <ScrollArea className="h-[450px] p-4">
         <div className="space-y-4">
