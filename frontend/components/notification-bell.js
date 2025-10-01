@@ -136,12 +136,12 @@ export function NotificationBell() {
       {/* Notifications Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-lg w-[95vw] max-h-[85vh] mx-auto p-4 sm:p-6">
-          <DialogHeader className="pb-2">
-            <DialogTitle className="text-lg sm:text-xl flex items-center gap-2">
+          <DialogHeader className="pb-2 text-center sm:text-left">
+            <DialogTitle className="text-lg sm:text-xl flex items-center justify-center sm:justify-start gap-2">
               <Bell className="h-5 w-5" />
               Notifications
             </DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm">
+            <DialogDescription className="text-xs sm:text-sm text-center sm:text-left">
               {notifications.length === 0 
                 ? "You're all caught up! No pending notifications."
                 : `You have ${notifications.length} pending payment request${notifications.length !== 1 ? 's' : ''}`
@@ -152,11 +152,11 @@ export function NotificationBell() {
           {/* Notifications List */}
           {notifications.length > 0 ? (
             <ScrollArea className="max-h-[60vh] pr-4">
-              <div className="space-y-3 py-2">
+              <div className="space-y-3 py-2 w-full">
                 {notifications.map((notification) => (
                   <Card 
                     key={notification.id}
-                    className="bg-gradient-to-br from-orange-900/20 to-yellow-900/20 border-orange-500/30 p-4"
+                    className="bg-gradient-to-br from-orange-900/20 to-yellow-900/20 border-orange-500/30 p-4 w-full"
                   >
                     {/* Notification Header */}
                     <div className="flex items-start gap-3 mb-3">

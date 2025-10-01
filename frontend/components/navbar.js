@@ -299,9 +299,6 @@ export function Navbar() {
         <DialogContent className="sm:max-w-md w-[92vw] mx-auto p-4 sm:p-6">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-lg sm:text-xl">Account Balance</DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm">
-              View your wallet information and token balances
-            </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-3 sm:space-y-4 py-2">
