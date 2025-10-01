@@ -2,7 +2,14 @@
 
 import { RainbowKitProvider, connectorsForWallets } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
+import { 
+  injectedWallet,
+  metaMaskWallet,
+  walletConnectWallet,
+  coinbaseWallet,
+  trustWallet,
+  rainbowWallet
+} from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { WagmiProvider, createConfig, http, useConnect } from "wagmi";
@@ -10,11 +17,24 @@ import { celo, celoAlfajores } from "wagmi/chains";
 
 // Configure wallet connectors for RainbowKit
 // This sets up the available wallet options for users
+// Including mobile-friendly wallets that use WalletConnect
 const connectors = connectorsForWallets(
   [
     {
       groupName: "Recommended",
-      wallets: [injectedWallet],
+      wallets: [
+        metaMaskWallet,      // MetaMask - works on mobile via WalletConnect
+        walletConnectWallet, // Generic WalletConnect - supports many mobile wallets
+        injectedWallet,      // Browser wallets (desktop extensions)
+      ],
+    },
+    {
+      groupName: "More Options",
+      wallets: [
+        coinbaseWallet,  // Coinbase Wallet
+        trustWallet,     // Trust Wallet (popular mobile wallet)
+        rainbowWallet,   // Rainbow Wallet
+      ],
     },
   ],
   {
