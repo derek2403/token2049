@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { BorderBeam } from "@/components/ui/border-beam";
+import Link from "next/link";
 
 // All messages in the conversation - defined outside component to prevent re-creation
 const allMessages = [
@@ -64,6 +65,12 @@ const allMessages = [
       slippage: "0.5%",
     },
   },
+  {
+    id: 7,
+    type: "bot",
+    text: "Ready to make your own transactions? Head to the Chat page to try it yourself!",
+    timestamp: "2:35 PM",
+  },
 ];
 
 /**
@@ -78,6 +85,7 @@ export function ChatDemo() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [typingText, setTypingText] = useState(""); // Current text being typed
   const [isTyping, setIsTyping] = useState(false);
+  const [typingMessageId, setTypingMessageId] = useState(null); // Track which message is typing
   const scrollAreaRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const hasStartedRef = useRef(false); // Track if animation has started
@@ -140,6 +148,7 @@ export function ChatDemo() {
     // Bot messages type letter by letter
     if (currentMessage.type === "bot") {
       setIsTyping(true);
+      setTypingMessageId(currentMessage.id); // Track which message is typing
       const fullText = currentMessage.text;
       let charIndex = 0;
       
@@ -154,6 +163,7 @@ export function ChatDemo() {
         } else {
           clearInterval(typeTimer);
           setIsTyping(false);
+          setTypingMessageId(null);
           setTypingText("");
           setMessages(prev => [...prev, currentMessage]);
           setCurrentIndex(prev => prev + 1);
@@ -208,12 +218,23 @@ export function ChatDemo() {
               {message.type === "bot" && (
                 <div className="flex justify-start">
                   <div className="max-w-[85%]">
-                    <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
-                      <p className="text-sm">{message.text}</p>
-                      
-                      {/* Intent Details Card */}
-                      {message.intent && (
-                        <div className="mt-3 bg-neutral-900/50 rounded-lg p-3 space-y-2 border border-neutral-700">
+                    {/* Clickable CTA message for the last message */}
+                    {message.id === 7 ? (
+                      <Link href="/chat">
+                        <div className="bg-neutral-700 hover:bg-neutral-600 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5 cursor-pointer transition-colors group border border-neutral-600/50">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm">{message.text}</p>
+                            <ArrowRight className="h-4 w-4 text-neutral-400 group-hover:text-neutral-200 group-hover:translate-x-1 transition-all" />
+                          </div>
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
+                        <p className="text-sm">{message.text}</p>
+                        
+                        {/* Intent Details Card */}
+                        {message.intent && (
+                          <div className="mt-3 bg-neutral-900/50 rounded-lg p-3 space-y-2 border border-neutral-700">
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-neutral-400">Action</span>
                             <span className="text-white font-medium">{message.intent.action}</span>
@@ -260,9 +281,10 @@ export function ChatDemo() {
                               <span className="text-neutral-300">{message.intent.slippage}</span>
                             </div>
                           )}
-                        </div>
-                      )}
-                    </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <p className="text-xs text-neutral-500 mt-1">{message.timestamp}</p>
                   </div>
                 </div>
@@ -309,9 +331,19 @@ export function ChatDemo() {
             >
               <div className="flex justify-start">
                 <div className="max-w-[85%]">
-                  <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
-                    <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
-                  </div>
+                  {/* Show clickable style for last message while typing */}
+                  {typingMessageId === 7 ? (
+                    <div className="bg-neutral-700 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5 border border-neutral-600/50">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
+                        <ArrowRight className="h-4 w-4 text-neutral-400" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
+                      <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
