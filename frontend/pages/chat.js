@@ -37,7 +37,7 @@ export default function Chat() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const initialRenderRef = useRef(true); // Track initial render
+  const prevMessageCountRef = useRef(messages.length); // Track previous message count
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -45,12 +45,12 @@ export default function Chat() {
   };
 
   useEffect(() => {
-    // Skip scroll on initial render
-    if (initialRenderRef.current) {
-      initialRenderRef.current = false;
-      return;
+    // Only scroll if messages were actually added (not on initial mount)
+    if (messages.length > prevMessageCountRef.current) {
+      scrollToBottom();
     }
-    scrollToBottom();
+    // Update the previous count
+    prevMessageCountRef.current = messages.length;
   }, [messages]);
 
   // Handle sending messages
