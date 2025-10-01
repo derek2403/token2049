@@ -1,44 +1,30 @@
 /**
  * Currency Utilities
- * Handle USD to CELO conversion
+ * Simple 1:1 conversion - $1 = 1 CELO
  */
 
 /**
- * Get current CELO price in USD
- * In production, this should call a real price API (e.g., CoinGecko, CoinMarketCap)
- */
-export async function getCeloPrice() {
-  try {
-    // Using CoinGecko API as an example
-    const response = await fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=celo&vs_currencies=usd'
-    );
-    const data = await response.json();
-    return data.celo?.usd || 0.50; // Fallback to ~$0.50 if API fails
-  } catch (error) {
-    console.error('Error fetching CELO price:', error);
-    return 0.50; // Fallback price
-  }
-}
-
-/**
- * Convert USD amount to CELO
+ * Convert USD amount to CELO (1:1 ratio)
+ * $1 = 1 CELO
  */
 export async function usdToCelo(usdAmount) {
-  const celoPrice = await getCeloPrice();
-  if (celoPrice === 0) return 0;
+  const amount = parseFloat(usdAmount);
+  if (isNaN(amount) || amount <= 0) return "0";
   
-  const celoAmount = parseFloat(usdAmount) / celoPrice;
-  return celoAmount.toFixed(4); // Return with 4 decimal places
+  // 1:1 conversion - $1 = 1 CELO
+  return amount.toString();
 }
 
 /**
- * Convert CELO amount to USD
+ * Convert CELO amount to USD (1:1 ratio)
+ * 1 CELO = $1
  */
 export async function celoToUsd(celoAmount) {
-  const celoPrice = await getCeloPrice();
-  const usdAmount = parseFloat(celoAmount) * celoPrice;
-  return usdAmount.toFixed(2); // Return with 2 decimal places
+  const amount = parseFloat(celoAmount);
+  if (isNaN(amount) || amount <= 0) return "0";
+  
+  // 1:1 conversion - 1 CELO = $1
+  return amount.toFixed(2);
 }
 
 /**
