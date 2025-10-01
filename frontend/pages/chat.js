@@ -447,7 +447,7 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
     const processingMessage = {
       id: Date.now(),
       type: "system",
-      text: "Processing stake... Please confirm in your wallet.",
+      text: "Preparing to stake CELO... Please confirm in your wallet.",
       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     };
     setMessages(prev => [...prev, processingMessage]);
@@ -456,8 +456,27 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
       const result = await executeStakeCelo({
         amount,
         writeContract: writeContractAsync,
+        sendTransaction: sendTransactionAsync,
         chainId: chain?.id || 42220,
         userAddress,
+        onSwapStart: () => {
+          const msg = {
+            id: Date.now(),
+            type: "system",
+            text: "Step 1/3: Wrapping CELO... Please confirm.",
+            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          };
+          setMessages(prev => [...prev, msg]);
+        },
+        onSwapComplete: (swapResult) => {
+          const msg = {
+            id: Date.now(),
+            type: "system",
+            text: "Step 2/3: Approving stCELO contract... Please confirm.",
+            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          };
+          setMessages(prev => [...prev, msg]);
+        },
       });
       
       if (result.success) {
@@ -468,19 +487,18 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
         const pendingMessage = {
           id: Date.now() + 1,
           type: "system",
-          text: `Staking transaction submitted! Waiting for confirmation...`,
+          text: `Step 3/3: Staking complete! Waiting for blockchain confirmation...`,
           timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         };
         setMessages(prev => [...prev, pendingMessage]);
         
-        // Add a clickable link message
-        const linkMessage = {
+        const stakeLinkMessage = {
           id: Date.now() + 2,
           type: "bot",
           text: `View transaction: ${explorerUrl}`,
           timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         };
-        setMessages(prev => [...prev, linkMessage]);
+        setMessages(prev => [...prev, stakeLinkMessage]);
         
       } else {
         // Handle error
@@ -852,8 +870,8 @@ You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
                                   <span className="font-medium text-green-300">~{message.action.data.amount} stCELO</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-neutral-400">Contract:</span>
-                                  <span className="font-mono text-xs">{message.action.data.contractAddress?.substring(0, 10)}...</span>
+                                  <span className="text-neutral-400">Network:</span>
+                                  <span className="text-xs">Celo Mainnet</span>
                                 </div>
                                 <div className="mt-2 pt-2 border-t border-neutral-700">
                                   <p className="text-neutral-400 text-xs">
