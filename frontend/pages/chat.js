@@ -183,18 +183,43 @@ IMPORTANT FEATURES:
 - Users can type $ for USD amounts (frontend auto-converts to CELO)
 - All transfers use CELO token by default
 - You will receive wallet addresses (not contact names) in the processed input
+- When parsing amounts, look for patterns like "30 CELO" or just numbers near addresses
 
-When the user wants to transfer funds and you have all required information (destination address, amount in CELO, token symbol), respond with ONLY this JSON format:
+AVAILABLE FUNCTIONS:
+
+1. TRANSFER FUNDS - When the user wants to send/transfer money TO someone:
 {"name": "transfer_funds", "arguments": {"destinationAddress": "0x...", "amount": "number", "tokenSymbol": "CELO"}}
 
-If any information is missing, ask the user for it in natural language. Only output the JSON when you have ALL three required parameters.
+2. REQUEST PAYMENT - When the user wants to REQUEST money FROM someone(s), split bills, or ask for payment:
+{"name": "request_payment", "arguments": {"fromAddresses": ["0x...", "0x..."], "totalAmount": "number", "tokenSymbol": "CELO", "description": "optional text"}}
 
-Examples:
-User input (what you see): "Send 20 CELO to 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+PAYMENT REQUEST RULES:
+- For EQUAL split: provide only totalAmount and it will be divided equally
+- For CUSTOM amounts: use individualAmounts object with address-amount pairs
+- If user mentions total AND some specific amounts but NOT all: calculate remaining amount for unspecified users
+- Parse patterns like "I paid X for Y, @User1 amount1, @User2 amount2, @User3" - User3 gets remainder
+- Extract context like "dinner", "movie", "lunch" for the description field
+
+If any information is missing, ask the user for it in natural language. Only output the JSON when you have ALL required parameters.
+
+EXAMPLES:
+
+User: "Send 20 CELO to 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
 You: {"name": "transfer_funds", "arguments": {"destinationAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb", "amount": "20", "tokenSymbol": "CELO"}}
 
-User input: "Send 50"
-You: I can help you send 50 CELO! Where would you like to send it? You can type @ to select from your contacts.`;
+User: "I paid 60 CELO for dinner, split with 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 and 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"
+You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "totalAmount": "60", "tokenSymbol": "CELO", "description": "dinner"}}
+
+User: "i paid for dinner 30 CELO 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 15 CELO 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092 10 CELO 0x41Db99b9A098Af28A06C0af238799c08076Af2f7"
+Analysis: Total = 30 CELO, Alice = 15 CELO, Bob = 10 CELO, Carol = remainder = 5 CELO
+You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092", "0x41Db99b9A098Af28A06C0af238799c08076Af2f7"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "15", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "10", "0x41Db99b9A098Af28A06C0af238799c08076Af2f7": "5"}, "tokenSymbol": "CELO", "description": "dinner"}}
+
+User: "Request 10 CELO from 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 and 25 CELO from 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"
+You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "10", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "25"}, "tokenSymbol": "CELO"}}
+
+User: "Split 90 CELO movie tickets with 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092 0x41Db99b9A098Af28A06C0af238799c08076Af2f7"
+Analysis: Equal split among 3 people = 30 CELO each
+You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092", "0x41Db99b9A098Af28A06C0af238799c08076Af2f7"], "totalAmount": "90", "tokenSymbol": "CELO", "description": "movie tickets"}}`;
 
       const apiMessages = [
         { role: "system", content: systemPrompt },
@@ -461,6 +486,72 @@ You: I can help you send 50 CELO! Where would you like to send it? You can type 
     }
   };
 
+  // Handle creating payment request
+  const handleCreatePaymentRequest = async (requestData) => {
+    try {
+      // Show processing message
+      const processingMessage = {
+        id: Date.now(),
+        type: "system",
+        text: "Creating payment request...",
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages(prev => [...prev, processingMessage]);
+
+      // Create notification data for each recipient
+      const notifications = requestData.fromAddresses.map((addr) => ({
+        id: `${Date.now()}-${addr}`,
+        type: "payment_request",
+        from: userAddress,
+        to: addr,
+        amount: requestData.amounts[addr],
+        tokenSymbol: requestData.tokenSymbol,
+        description: requestData.description || "Payment request",
+        timestamp: new Date().toISOString(),
+        status: "pending",
+      }));
+
+      // In a real app, you would send this to a backend/notification service
+      // For now, we'll just show a success message
+      console.log("Payment requests created:", notifications);
+
+      const successMessage = {
+        id: Date.now() + 1,
+        type: "attestation",
+        text: "Payment request sent successfully!",
+        details: [
+          `Requesting ${requestData.totalAmount} ${requestData.tokenSymbol} total`,
+          `Split among ${requestData.fromAddresses.length} user(s)`,
+          requestData.splitType === 'equal_split' 
+            ? `Each person owes ${requestData.amounts[requestData.fromAddresses[0]]} ${requestData.tokenSymbol}`
+            : 'Custom amounts assigned',
+        ],
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+      
+      setMessages(prev => [...prev, successMessage]);
+
+      // Optionally save to localStorage or send to backend
+      try {
+        const existingRequests = JSON.parse(localStorage.getItem('paymentRequests') || '[]');
+        localStorage.setItem('paymentRequests', JSON.stringify([...existingRequests, ...notifications]));
+      } catch (e) {
+        console.error('Failed to save payment requests to localStorage:', e);
+      }
+
+    } catch (error) {
+      console.error('Payment request error:', error);
+      
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: "bot",
+        text: "Sorry, there was an error creating the payment request. Please try again.",
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
   return (
     <div className="font-sans min-h-screen overflow-x-hidden">
       {/* Main Layout with Spotlight Effect */}
@@ -632,6 +723,76 @@ You: I can help you send 50 CELO! Where would you like to send it? You can type 
                                       id: messages.length + 1,
                                       type: "bot",
                                       text: "Transfer cancelled. How else can I help you?",
+                                      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                                    };
+                                    setMessages(prev => [...prev, cancelMsg]);
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-neutral-500 mt-1">{message.timestamp}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Messages (Payment Request Confirmation) */}
+                      {message.type === "action" && message.action?.type === "request_payment" && (
+                        <div className="flex justify-start items-start gap-2">
+                          <Avatar className="h-8 w-8 bg-gradient-to-br from-orange-600 to-yellow-600 flex items-center justify-center">
+                            <AlertCircle className="h-4 w-4 text-white" />
+                          </Avatar>
+                          <div className="max-w-[80%] md:max-w-[70%]">
+                            <div className="bg-gradient-to-br from-orange-900/30 to-yellow-900/30 border border-orange-500/30 rounded-2xl rounded-tl-md px-4 py-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <AlertCircle className="h-4 w-4 text-white" />
+                                <p className="text-sm text-orange-300 font-medium">Payment Request Confirmation</p>
+                              </div>
+                              
+                              <div className="space-y-2 text-xs text-neutral-300 mb-3">
+                                {message.action.data.description && (
+                                  <div className="flex justify-between">
+                                    <span className="text-neutral-400">For:</span>
+                                    <span>{message.action.data.description}</span>
+                                  </div>
+                                )}
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">Total Amount:</span>
+                                  <span className="font-medium text-white">{message.action.data.totalAmount} {message.action.data.tokenSymbol}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">Split Type:</span>
+                                  <span>{message.action.data.splitType === 'equal_split' ? 'Equal Split' : 'Custom Amounts'}</span>
+                                </div>
+                                <div className="mt-2 pt-2 border-t border-neutral-700">
+                                  <p className="text-neutral-400 mb-1">Requesting from:</p>
+                                  {message.action.data.fromAddresses?.map((addr, idx) => (
+                                    <div key={idx} className="flex justify-between ml-2">
+                                      <span className="font-mono text-xs">{addr.substring(0, 10)}...</span>
+                                      <span className="font-medium text-orange-300">{message.action.data.amounts[addr]} {message.action.data.tokenSymbol}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  className="flex-1 bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-500 hover:to-yellow-500 text-white text-xs"
+                                  onClick={() => handleCreatePaymentRequest(message.action.data)}
+                                >
+                                  Send Request
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700 text-xs"
+                                  onClick={() => {
+                                    const cancelMsg = {
+                                      id: messages.length + 1,
+                                      type: "bot",
+                                      text: "Payment request cancelled. How else can I help you?",
                                       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
                                     };
                                     setMessages(prev => [...prev, cancelMsg]);
