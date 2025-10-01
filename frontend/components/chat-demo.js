@@ -5,6 +5,7 @@ import { CheckCircle2, Clock, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { BorderBeam } from "@/components/ui/border-beam";
+import { PulsatingButton } from "@/components/ui/pulsating-button";
 import Link from "next/link";
 
 // All messages in the conversation - defined outside component to prevent re-creation
@@ -225,14 +226,20 @@ export function ChatDemo() {
                   <div className="max-w-[85%]">
                     {/* Clickable CTA message for the last message */}
                     {message.id === 7 ? (
-                      <Link href="/chat">
-                        <div className="bg-neutral-700 hover:bg-neutral-600 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5 cursor-pointer transition-colors group border border-neutral-600/50">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm">{message.text}</p>
-                            <ArrowRight className="h-4 w-4 text-neutral-400 group-hover:text-neutral-200 group-hover:translate-x-1 transition-all" />
-                          </div>
+                      <div>
+                        <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
+                          <p className="text-sm mb-3">{message.text}</p>
+                          <Link href="/chat">
+                            <PulsatingButton 
+                              pulseColor="rgba(115, 115, 115, 0.5)"
+                              duration="2s"
+                              className="w-full bg-neutral-700 hover:bg-neutral-600 text-neutral-100 transition-colors"
+                            >
+                              Try it Now →
+                            </PulsatingButton>
+                          </Link>
                         </div>
-                      </Link>
+                      </div>
                     ) : (
                       <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
                         <p className="text-sm">{message.text}</p>
@@ -338,11 +345,8 @@ export function ChatDemo() {
                 <div className="max-w-[85%]">
                   {/* Show clickable style for last message while typing */}
                   {typingMessageId === 7 ? (
-                    <div className="bg-neutral-700 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5 border border-neutral-600/50">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
-                        <ArrowRight className="h-4 w-4 text-neutral-400" />
-                      </div>
+                    <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">
+                      <p className="text-sm">{typingText}<span className="animate-pulse">|</span></p>
                     </div>
                   ) : (
                     <div className="bg-neutral-800 text-neutral-100 rounded-2xl rounded-tl-md px-4 py-2.5">

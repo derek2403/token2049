@@ -76,6 +76,15 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --animate-pulse: pulse var(--duration) ease-out infinite;
+  @keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--pulse-color);
+    }
+  50% {
+    box-shadow: 0 0 0 8px var(--pulse-color);
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -185,7 +194,7 @@ body {
     /* Smooth scrolling for mobile */
     scroll-behavior: smooth;
   }
-  
+
   body {
     /* Prevent overscroll bounce effect */
     overscroll-behavior-y: none;
