@@ -167,50 +167,50 @@ export function Navbar() {
         </nav>
       </div>
       
-      {/* Balance Modal - Works on both mobile and desktop */}
+      {/* Balance Modal - Compact for mobile, comfortable for desktop */}
       <Dialog open={isBalanceOpen} onOpenChange={setIsBalanceOpen}>
-        <DialogContent className="sm:max-w-md w-[90vw] mx-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Account Balance</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-md w-[92vw] mx-auto p-4 sm:p-6">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-lg sm:text-xl">Account Balance</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
               View your wallet information and token balances
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-6 py-4">
+          <div className="space-y-3 sm:space-y-4 py-2">
             {/* User Information Section */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wide">
+            <div className="space-y-2">
+              <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wide">
                 User Information
               </h3>
               
               {/* Name */}
-              <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
-                <span className="text-sm text-neutral-400">Name</span>
-                <span className="text-sm font-medium text-neutral-100">{userData.name}</span>
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
+                <span className="text-xs sm:text-sm text-neutral-400">Name</span>
+                <span className="text-xs sm:text-sm font-medium text-neutral-100">{userData.name}</span>
               </div>
               
               {/* Phone */}
-              <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
-                <span className="text-sm text-neutral-400">Phone</span>
-                <span className="text-sm font-medium text-neutral-100">{userData.phone}</span>
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
+                <span className="text-xs sm:text-sm text-neutral-400">Phone</span>
+                <span className="text-xs sm:text-sm font-medium text-neutral-100">{userData.phone}</span>
               </div>
               
               {/* Wallet Address with Copy Button */}
-              <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
-                <span className="text-sm text-neutral-400">Wallet</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-neutral-100 font-mono">{userData.address}</span>
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
+                <span className="text-xs sm:text-sm text-neutral-400">Wallet</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs sm:text-sm font-medium text-neutral-100 font-mono">{userData.address}</span>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={copyAddress}
-                    className="h-7 w-7 p-0 hover:bg-neutral-700"
+                    className="h-6 w-6 p-0 hover:bg-neutral-700"
                   >
                     {copiedAddress ? (
-                      <Check className="h-3.5 w-3.5 text-green-400" />
+                      <Check className="h-3 w-3 text-green-400" />
                     ) : (
-                      <Copy className="h-3.5 w-3.5 text-neutral-400" />
+                      <Copy className="h-3 w-3 text-neutral-400" />
                     )}
                   </Button>
                 </div>
@@ -218,65 +218,65 @@ export function Navbar() {
             </div>
             
             {/* Token Balances Section */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wide">
+            <div className="space-y-2">
+              <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wide">
                 Token Balances
               </h3>
               
               {/* USDC Balance */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-br from-blue-900/20 to-blue-800/10 rounded-lg border border-blue-700/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center">
-                    <span className="text-lg font-bold text-blue-400">$</span>
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-br from-blue-900/20 to-blue-800/10 rounded-lg border border-blue-700/30">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-600/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-base sm:text-lg font-bold text-blue-400">$</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-100">USDC</p>
-                    <p className="text-xs text-neutral-400">USD Coin</p>
+                    <p className="text-xs sm:text-sm font-medium text-neutral-100">USDC</p>
+                    <p className="text-[10px] sm:text-xs text-neutral-400">USD Coin</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-semibold text-neutral-100">${userData.balances.USDC}</p>
+                  <p className="text-sm sm:text-lg font-semibold text-neutral-100">${userData.balances.USDC}</p>
                 </div>
               </div>
               
               {/* USDT Balance */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-br from-green-900/20 to-green-800/10 rounded-lg border border-green-700/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-green-600/20 flex items-center justify-center">
-                    <span className="text-lg font-bold text-green-400">₮</span>
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-br from-green-900/20 to-green-800/10 rounded-lg border border-green-700/30">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-600/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-base sm:text-lg font-bold text-green-400">₮</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-100">USDT</p>
-                    <p className="text-xs text-neutral-400">Tether USD</p>
+                    <p className="text-xs sm:text-sm font-medium text-neutral-100">USDT</p>
+                    <p className="text-[10px] sm:text-xs text-neutral-400">Tether USD</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-semibold text-neutral-100">${userData.balances.USDT}</p>
+                  <p className="text-sm sm:text-lg font-semibold text-neutral-100">${userData.balances.USDT}</p>
                 </div>
               </div>
               
               {/* cUSD Balance */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 rounded-lg border border-yellow-700/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-yellow-600/20 flex items-center justify-center">
-                    <span className="text-lg font-bold text-yellow-400">¢</span>
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 rounded-lg border border-yellow-700/30">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-600/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-base sm:text-lg font-bold text-yellow-400">¢</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-100">cUSD</p>
-                    <p className="text-xs text-neutral-400">Celo Dollar</p>
+                    <p className="text-xs sm:text-sm font-medium text-neutral-100">cUSD</p>
+                    <p className="text-[10px] sm:text-xs text-neutral-400">Celo Dollar</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-semibold text-neutral-100">${userData.balances.cUSD}</p>
+                  <p className="text-sm sm:text-lg font-semibold text-neutral-100">${userData.balances.cUSD}</p>
                 </div>
               </div>
             </div>
             
             {/* Total Balance */}
-            <div className="pt-4 border-t border-neutral-700">
-              <div className="flex items-center justify-between p-4 bg-neutral-800/80 rounded-lg">
-                <span className="text-base font-medium text-neutral-300">Total Balance</span>
-                <span className="text-xl font-bold text-neutral-100">
+            <div className="pt-2 sm:pt-3 border-t border-neutral-700">
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-neutral-800/80 rounded-lg">
+                <span className="text-sm sm:text-base font-medium text-neutral-300">Total Balance</span>
+                <span className="text-lg sm:text-xl font-bold text-neutral-100">
                   ${(
                     parseFloat(userData.balances.USDC.replace(/,/g, '')) + 
                     parseFloat(userData.balances.USDT.replace(/,/g, '')) + 
