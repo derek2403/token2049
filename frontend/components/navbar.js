@@ -4,7 +4,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/router"
 import { useState, useEffect } from "react"
-import { Menu, Wallet, Copy, Check } from "lucide-react"
+import { Menu, Wallet, Copy, Check, Loader2 } from "lucide-react"
+import { useAccount, useReadContract, useChainId } from "wagmi"
+import { formatUnits } from "viem"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -27,6 +29,34 @@ const navLinks = [
   { name: "Chat", href: "/chat" },
 ]
 
+// Token contract addresses for Celo Alfajores (testnet) and Mainnet
+// Replace these with actual contract addresses for your network
+const TOKEN_ADDRESSES = {
+  // Celo Alfajores (testnet - chainId: 44787)
+  44787: {
+    USDC: "0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B", // Alfajores USDC
+    USDT: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e", // Alfajores USDT
+    cUSD: "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1", // Alfajores cUSD (native stablecoin)
+  },
+  // Celo Mainnet (chainId: 42220)
+  42220: {
+    USDC: "0xef4229c8c3250C675F21BCefa42f58EfbfF6002a", // Mainnet USDC
+    USDT: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e", // Mainnet USDT
+    cUSD: "0x765DE816845861e75A25fCA122bb6898B8B1282a", // Mainnet cUSD
+  },
+}
+
+// ERC20 ABI - just the balanceOf function we need
+const ERC20_ABI = [
+  {
+    inputs: [{ name: "account", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+]
+
 /**
  * Navbar Component
  * Sticky navigation bar with wallet connection and mobile menu
@@ -38,29 +68,88 @@ export function Navbar() {
   const [isBalanceOpen, setIsBalanceOpen] = useState(false) // Balance modal state
   const [copiedAddress, setCopiedAddress] = useState(false) // Track if address was copied
   
+  // Get wallet connection info
+  const { address, isConnected } = useAccount()
+  const chainId = useChainId()
+  
+  // Get token addresses for current chain
+  const tokenAddresses = TOKEN_ADDRESSES[chainId] || TOKEN_ADDRESSES[44787] // Default to Alfajores
+  
+  // Fetch USDC balance
+  const { data: usdcBalance } = useReadContract({
+    address: tokenAddresses.USDC,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [address],
+    enabled: !!address && isConnected,
+  })
+  
+  // Fetch USDT balance
+  const { data: usdtBalance } = useReadContract({
+    address: tokenAddresses.USDT,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [address],
+    enabled: !!address && isConnected,
+  })
+  
+  // Fetch cUSD balance
+  const { data: cusdBalance } = useReadContract({
+    address: tokenAddresses.cUSD,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [address],
+    enabled: !!address && isConnected,
+  })
+  
+  // Format balances (tokens typically have 18 decimals, USDC/USDT may have 6)
+  const formatBalance = (balance, decimals = 18) => {
+    if (!balance) return "0.00"
+    try {
+      const formatted = formatUnits(balance, decimals)
+      return parseFloat(formatted).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    } catch {
+      return "0.00"
+    }
+  }
+  
+  // Prepare user data with actual wallet info
+  const userData = {
+    name: chainId === 42220 ? "Celo Mainnet" : "Celo Alfajores",
+    phone: "+1 (234) 567-8900", // You can make this editable or remove it
+    address: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Not connected",
+    fullAddress: address || "",
+    balances: {
+      USDC: formatBalance(usdcBalance, 6), // USDC typically has 6 decimals
+      USDT: formatBalance(usdtBalance, 6), // USDT typically has 6 decimals
+      cUSD: formatBalance(cusdBalance, 18), // cUSD has 18 decimals
+    }
+  }
+  
+  // Calculate total balance
+  const calculateTotal = () => {
+    try {
+      const usdc = parseFloat(userData.balances.USDC.replace(/,/g, '')) || 0
+      const usdt = parseFloat(userData.balances.USDT.replace(/,/g, '')) || 0
+      const cusd = parseFloat(userData.balances.cUSD.replace(/,/g, '')) || 0
+      return (usdc + usdt + cusd).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    } catch {
+      return "0.00"
+    }
+  }
+  
   // Set pathname on client side only to prevent hydration errors
   useEffect(() => {
     setPathname(router.pathname)
   }, [router.pathname])
   
-  // Mock user data - Replace with real wallet data later
-  const userData = {
-    name: "Celo Alfajores",
-    phone: "+1 (234) 567-8900",
-    address: "0x45...1162",
-    fullAddress: "0x45aa9A11B0C991C4b3E99e1E5c7b79d7E3D21162",
-    balances: {
-      USDC: "1,250.00",
-      USDT: "850.50",
-      cUSD: "9.49"
-    }
-  }
-  
   // Copy wallet address to clipboard
   const copyAddress = () => {
-    navigator.clipboard.writeText(userData.fullAddress)
-    setCopiedAddress(true)
-    setTimeout(() => setCopiedAddress(false), 2000) // Reset after 2 seconds
+    if (userData.fullAddress) {
+      navigator.clipboard.writeText(userData.fullAddress)
+      setCopiedAddress(true)
+      setTimeout(() => setCopiedAddress(false), 2000) // Reset after 2 seconds
+    }
   }
   
   return (
@@ -99,15 +188,17 @@ export function Navbar() {
                 {/* Mobile balance and wallet section */}
                 <div className="mt-6 pt-6 border-t border-neutral-800/50 space-y-3">
                   <div className="px-3">
-                    {/* Balance button for mobile */}
-                    <Button 
-                      variant="outline"
-                      onClick={() => setIsBalanceOpen(true)}
-                      className="w-full bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white mb-3"
-                    >
-                      <Wallet className="h-4 w-4 mr-2" />
-                      View Balance
-                    </Button>
+                    {/* Balance button for mobile - Only show when connected */}
+                    {isConnected && (
+                      <Button 
+                        variant="outline"
+                        onClick={() => setIsBalanceOpen(true)}
+                        className="w-full bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white mb-3"
+                      >
+                        <Wallet className="h-4 w-4 mr-2" />
+                        View Balance
+                      </Button>
+                    )}
                     <ConnectButton />
                   </div>
                 </div>
@@ -123,18 +214,20 @@ export function Navbar() {
           </Link>
         </div>
         
-        {/* Mobile Balance Button - Visible on top right */}
-        <div className="md:hidden">
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={() => setIsBalanceOpen(true)}
-            className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-          >
-            <Wallet className="h-4 w-4 mr-1" />
-            Balance
-          </Button>
-        </div>
+        {/* Mobile Balance Button - Visible on top right - Only show when connected */}
+        {isConnected && (
+          <div className="md:hidden">
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBalanceOpen(true)}
+              className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+            >
+              <Wallet className="h-4 w-4 mr-1" />
+              Balance
+            </Button>
+          </div>
+        )}
         
         {/* Desktop navigation */}
         <nav className="hidden md:flex items-center gap-8">
@@ -153,16 +246,18 @@ export function Navbar() {
           ))}
           
           <div className="flex items-center gap-3">
-            {/* Balance button for desktop */}
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => setIsBalanceOpen(true)}
-              className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-            >
-              <Wallet className="h-4 w-4 mr-2" />
-              Balance
-            </Button>
+            {/* Balance button for desktop - Only show when connected */}
+            {isConnected && (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => setIsBalanceOpen(true)}
+                className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+              >
+                <Wallet className="h-4 w-4 mr-2" />
+                Balance
+              </Button>
+            )}
             <ConnectButton />
           </div>
         </nav>
@@ -296,11 +391,7 @@ export function Navbar() {
               <div className="flex items-center justify-between p-3 sm:p-4 bg-neutral-800/80 rounded-lg">
                 <span className="text-sm sm:text-base font-medium text-neutral-300">Total Balance</span>
                 <span className="text-lg sm:text-xl font-bold text-neutral-100">
-                  ${(
-                    parseFloat(userData.balances.USDC.replace(/,/g, '')) + 
-                    parseFloat(userData.balances.USDT.replace(/,/g, '')) + 
-                    parseFloat(userData.balances.cUSD.replace(/,/g, ''))
-                  ).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ${calculateTotal()}
                 </span>
               </div>
             </div>
