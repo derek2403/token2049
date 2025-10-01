@@ -1,29 +1,17 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import { Spotlight } from "@/components/ui/spotlight";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
 import { ChatDemo } from "@/components/chat-demo";
 
-// Font configuration for the app
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 /**
  * Natural Language Transaction Engine Landing Page
  * Mobile-first design optimized for iPhone 13 Pro Max (428x926px)
- * Demonstrates chatbot interface for crypto transactions with EigenLayer AVS security
+ * Demonstrates chatbot interface for crypto transactions
  * PWA ready for iOS
  */
 export default function Home() {
   return (
-    <div className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen overflow-x-hidden`}>
+    <div className="font-sans min-h-screen overflow-x-hidden">
       {/* Mobile-optimized Layout with Spotlight Effect */}
       <div className="min-h-screen w-full flex flex-col bg-black/[0.96] antialiased bg-grid-white/[0.02] relative">
         {/* Navbar with wallet connection */}
@@ -75,7 +63,7 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="text-neutral-600 text-xs text-center mt-6 pb-4"
           >
-            <p>Powered by Celo × EigenLayer AVS</p>
+            <p>Natural Language Crypto Transactions</p>
           </motion.footer>
         </div>
       </div>

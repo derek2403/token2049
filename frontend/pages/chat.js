@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Spotlight } from "@/components/ui/spotlight";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
@@ -15,20 +14,8 @@ import {
   Clock, 
   Bot, 
   User,
-  Sparkles,
-  Shield
+  Sparkles
 } from "lucide-react";
-
-// Font configuration
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 /**
  * Chat Interface Page
@@ -101,7 +88,7 @@ export default function Chat() {
   };
 
   return (
-    <div className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen overflow-x-hidden`}>
+    <div className="font-sans min-h-screen overflow-x-hidden">
       {/* Main Layout with Spotlight Effect */}
       <div className="min-h-screen w-full flex flex-col bg-black/[0.96] antialiased bg-grid-white/[0.02] relative">
         {/* Navbar */}
@@ -126,9 +113,8 @@ export default function Chat() {
             <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-2">
               Natural Language Chat
             </h1>
-            <p className="text-xs md:text-sm text-neutral-400 flex items-center justify-center gap-2">
-              <Shield className="h-4 w-4 text-green-400" />
-              Secured by EigenLayer AVS
+            <p className="text-xs md:text-sm text-neutral-400">
+              Chat with AI to make crypto transactions
             </p>
           </motion.div>
 
@@ -276,7 +262,7 @@ export default function Chat() {
                 {/* Info Badge */}
                 <div className="mt-2 flex items-center justify-center gap-2">
                   <Badge variant="secondary" className="text-xs bg-neutral-800 text-neutral-400 border-neutral-700">
-                    Powered by Celo × EigenLayer
+                    AI-Powered Transactions
                   </Badge>
                 </div>
               </div>

@@ -9,6 +9,11 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        {/* Google Fonts - Varela Round */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
+        
         {/* PWA Primary Color - Dark theme */}
         <meta name="theme-color" content="#000000" />
         
