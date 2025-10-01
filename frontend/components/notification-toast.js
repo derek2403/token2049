@@ -2,9 +2,11 @@
 
 import { useState, useEffect, createContext, useContext } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Bell, CheckCircle2 } from "lucide-react"
+import { X, Bell, CheckCircle2, Send } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useAccount, useWriteContract, useSendTransaction } from "wagmi"
+import { executeTokenTransfer } from "@/lib/llmActions/executeTransfer"
 
 // Create context for notifications
 const NotificationContext = createContext()
@@ -74,7 +76,12 @@ function NotificationToastContainer({ notifications, onRemove }) {
  * Individual Toast Notification
  */
 function NotificationToast({ notification, onClose }) {
-  const { type, title, message, amount, tokenSymbol, fromName } = notification
+  const { type, title, message, amount, tokenSymbol, fromName, fromAddress } = notification
+  const { address: userAddress, chain } = useAccount()
+  const { writeContractAsync } = useWriteContract()
+  const { sendTransactionAsync } = useSendTransaction()
+  const { showNotification } = useNotifications()
+  const [isPaying, setIsPaying] = useState(false)
 
   const getIcon = () => {
     switch (type) {
@@ -95,6 +102,63 @@ function NotificationToast({ notification, onClose }) {
         return 'from-green-900/30 to-emerald-900/30 border-green-500/50'
       default:
         return 'from-blue-900/30 to-indigo-900/30 border-blue-500/50'
+    }
+  }
+
+  const handlePayNow = async () => {
+    if (!fromAddress || !amount || !tokenSymbol) {
+      console.error('Missing payment information')
+      return
+    }
+
+    setIsPaying(true)
+
+    try {
+      const result = await executeTokenTransfer({
+        destinationAddress: fromAddress,
+        amount: amount,
+        tokenSymbol: tokenSymbol,
+        writeContract: writeContractAsync,
+        sendTransaction: sendTransactionAsync,
+        chainId: chain?.id || 44787,
+        userAddress,
+      })
+
+      if (result.success) {
+        // Close current notification
+        onClose()
+        
+        // Show success notification
+        showNotification({
+          type: 'payment_sent',
+          title: 'Payment Sent Successfully! 🎉',
+          message: `Sent ${amount} ${tokenSymbol} to ${fromName}`,
+          amount: amount,
+          tokenSymbol: tokenSymbol,
+        })
+        
+        console.log('Payment successful:', result)
+      } else {
+        console.error('Payment failed:', result.error)
+        
+        // Show error as notification instead of alert
+        showNotification({
+          type: 'payment_request',
+          title: 'Payment Failed',
+          message: result.userRejected ? 'Transaction was cancelled' : (result.error || 'Failed to process payment'),
+        })
+      }
+    } catch (error) {
+      console.error('Payment error:', error)
+      
+      // Show error notification
+      showNotification({
+        type: 'payment_request',
+        title: 'Payment Error',
+        message: 'Failed to process payment. Please try again.',
+      })
+    } finally {
+      setIsPaying(false)
     }
   }
 
@@ -127,6 +191,35 @@ function NotificationToast({ notification, onClose }) {
               <p className="text-base font-bold text-white mt-2">
                 {amount} {tokenSymbol}
               </p>
+            )}
+
+            {/* Pay Now button for payment requests */}
+            {type === 'payment_request' && fromAddress && (
+              <div className="flex items-center gap-2 mt-3">
+                <Button
+                  size="sm"
+                  className="bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-500 hover:to-yellow-500 text-white text-xs px-3 py-1 h-7"
+                  onClick={handlePayNow}
+                  disabled={isPaying}
+                >
+                  {isPaying ? (
+                    <>Processing...</>
+                  ) : (
+                    <>
+                      <Send className="h-3 w-3 mr-1" />
+                      Pay Now
+                    </>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-neutral-300 hover:text-white text-xs px-2 py-1 h-7"
+                  onClick={onClose}
+                >
+                  Dismiss
+                </Button>
+              </div>
             )}
           </div>
           
