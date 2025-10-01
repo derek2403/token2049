@@ -209,23 +209,10 @@ export function Navbar() {
                     {link.name}
                   </Link>
                 ))}
-                {/* Mobile balance and wallet section */}
+                {/* Mobile wallet section */}
                 <div className="mt-6 pt-6 border-t border-neutral-800/50 space-y-3">
                   <div className="px-3">
-                    {/* Notification & Balance buttons for mobile menu - Only show when connected */}
-                    {isConnected && (
-                      <div className="space-y-3 mb-3">
-                        <NotificationBell />
-                        <Button 
-                          variant="outline"
-                          onClick={() => setIsBalanceOpen(true)}
-                          className="w-full bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-                        >
-                          <Wallet className="h-4 w-4 mr-2" />
-                          View Balance
-                        </Button>
-                      </div>
-                    )}
+                    {/* Connect button for mobile menu */}
                     <ConnectButton />
                   </div>
                 </div>
