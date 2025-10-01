@@ -24,7 +24,6 @@ import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTr
 import { useContacts } from "@/hooks/useContacts";
 import { ContactAutocomplete } from "@/components/contact-autocomplete";
 import { usdToCelo, parseUsdAmount } from "@/lib/currencyUtils";
-import { useNotifications } from "@/components/notification-toast";
 
 /**
  * Chat Interface Page
@@ -37,7 +36,6 @@ export default function Chat() {
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
   const { contacts, searchContacts, getContactByName } = useContacts();
-  const { showNotification } = useNotifications();
   
   const [messages, setMessages] = useState([
     {
@@ -512,23 +510,52 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
       const senderContact = contacts.find(c => c.wallet.toLowerCase() === userAddress?.toLowerCase());
       const senderName = senderContact?.name || `${userAddress?.substring(0, 6)}...${userAddress?.substring(38)}`;
 
-      // Show toast notification for each recipient (simulating their view)
-      requestData.fromAddresses.forEach((addr) => {
+      // Create notifications for each recipient
+      const notificationsToSave = requestData.fromAddresses.map((addr) => {
         // Find recipient name
         const recipientContact = contacts.find(c => c.wallet.toLowerCase() === addr.toLowerCase());
         const recipientName = recipientContact?.name || `${addr.substring(0, 6)}...${addr.substring(38)}`;
 
-        // Show notification from receiver's perspective
-        showNotification({
+        return {
+          id: `${Date.now()}-${addr}-${Math.random()}`,
           type: 'payment_request',
           title: 'Payment Request Received',
           message: `${senderName} has requested payment from ${recipientName}`,
+          from: userAddress,
+          fromName: senderName,
+          to: addr,
+          toName: recipientName,
           amount: requestData.amounts[addr],
           tokenSymbol: requestData.tokenSymbol,
-          fromName: senderName,
-          fromAddress: userAddress, // Sender's wallet address for payment
-        });
+          description: requestData.description || "Payment request",
+          timestamp: new Date().toISOString(),
+          status: 'pending',
+        };
       });
+
+      // Save notifications to backend (JSON file)
+      try {
+        const response = await fetch('/api/notifications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            notifications: notificationsToSave,
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (!result.success) {
+          throw new Error('Failed to save notifications');
+        }
+
+        console.log('Payment request notifications saved:', result);
+      } catch (apiError) {
+        console.error('Failed to save notifications:', apiError);
+        throw apiError;
+      }
 
       const successMessage = {
         id: Date.now() + 1,
@@ -540,7 +567,7 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
           requestData.splitType === 'equal_split' 
             ? `Each person owes ${requestData.amounts[requestData.fromAddresses[0]]} ${requestData.tokenSymbol}`
             : 'Custom amounts assigned',
-          `Popup notifications shown for all recipients`,
+          `Recipients will receive notifications when they connect their wallets`,
         ],
         timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       };
