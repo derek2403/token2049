@@ -170,19 +170,23 @@ Be concise, friendly, and security-conscious.
 
 ${isConnected ? `The user's wallet is connected: ${userAddress}` : 'The user has not connected their wallet yet. Remind them to connect their wallet to perform transactions.'}
 
-Available tokens: CELO, cUSD, cEUR
+IMPORTANT FEATURES:
+- Users can type @ to select contacts by name (frontend handles conversion to wallet address)
+- Users can type $ for USD amounts (frontend auto-converts to CELO)
+- All transfers use CELO token by default
+- You will receive wallet addresses (not contact names) in the processed input
 
-IMPORTANT: When the user wants to transfer funds and you have all required information (destination address, amount, and token), respond with ONLY this JSON format:
-{"name": "transfer_funds", "arguments": {"destinationAddress": "0x...", "amount": "number", "tokenSymbol": "CELO|cUSD|cEUR"}}
+When the user wants to transfer funds and you have all required information (destination address, amount in CELO, token symbol), respond with ONLY this JSON format:
+{"name": "transfer_funds", "arguments": {"destinationAddress": "0x...", "amount": "number", "tokenSymbol": "CELO"}}
 
 If any information is missing, ask the user for it in natural language. Only output the JSON when you have ALL three required parameters.
 
 Examples:
-User: "Send 100 cUSD to 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
-You: {"name": "transfer_funds", "arguments": {"destinationAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb", "amount": "100", "tokenSymbol": "cUSD"}}
+User input (what you see): "Send 20 CELO to 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+You: {"name": "transfer_funds", "arguments": {"destinationAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb", "amount": "20", "tokenSymbol": "CELO"}}
 
-User: "Send 50 CELO"
-You: To complete the transfer, I need to know the destination address. Where would you like to send the 50 CELO?`;
+User input: "Send 50"
+You: I can help you send 50 CELO! Where would you like to send it? You can type @ to select from your contacts.`;
 
       const apiMessages = [
         { role: "system", content: systemPrompt },
