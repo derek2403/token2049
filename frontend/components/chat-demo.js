@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle2, Clock } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { BorderBeam } from "@/components/ui/border-beam";
 
 // All messages in the conversation - defined outside component to prevent re-creation
@@ -78,9 +78,26 @@ export function ChatDemo() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [typingText, setTypingText] = useState(""); // Current text being typed
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef(null);
+  const scrollAreaRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const hasStartedRef = useRef(false); // Track if animation has started
   const initialRenderRef = useRef(true); // Track initial render
+
+  // Smooth scroll function - scrolls the chat to bottom
+  const scrollToBottom = useCallback(() => {
+    if (scrollAreaRef.current) {
+      // Use requestAnimationFrame for smoother, faster scrolling
+      requestAnimationFrame(() => {
+        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      });
+    }
+  }, []);
 
   // Auto-scroll to bottom when new messages arrive (only after first message)
   useEffect(() => {
@@ -91,8 +108,8 @@ export function ChatDemo() {
     }
     
     // Only scroll after messages have started appearing
-    if (hasStartedRef.current && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (hasStartedRef.current) {
+      scrollToBottom();
     }
   }, [messages, typingText]);
 
@@ -111,7 +128,9 @@ export function ChatDemo() {
         if (currentIndex > 0) {
           hasStartedRef.current = true;
         }
-      }, currentIndex === 0 ? 500 : 800);
+        // Scroll immediately after adding message
+        setTimeout(scrollToBottom, 50);
+      }, currentIndex === 0 ? 400 : 600);
       
       return () => clearTimeout(timer);
     }
@@ -126,18 +145,24 @@ export function ChatDemo() {
         if (charIndex <= fullText.length) {
           setTypingText(fullText.slice(0, charIndex));
           charIndex++;
+          // Scroll while typing to keep up with text
+          if (charIndex % 10 === 0) {
+            scrollToBottom();
+          }
         } else {
           clearInterval(typeTimer);
           setIsTyping(false);
           setTypingText("");
           setMessages(prev => [...prev, currentMessage]);
           setCurrentIndex(prev => prev + 1);
+          // Scroll after message is complete
+          setTimeout(scrollToBottom, 50);
         }
-      }, 30); // 30ms per character for smooth typing
+      }, 25); // 25ms per character for faster typing
       
       return () => clearInterval(typeTimer);
     }
-  }, [currentIndex]); // Removed allMessages from deps since it's now constant
+  }, [currentIndex, scrollToBottom]); // Include scrollToBottom in deps
 
   return (
     <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg relative overflow-hidden">
@@ -156,8 +181,8 @@ export function ChatDemo() {
       />
       
       {/* Chat Messages - Scrollable area for mobile */}
-      <ScrollArea className="h-[450px] p-4">
-        <div className="space-y-4">
+      <ScrollArea ref={scrollAreaRef} className="h-[450px] p-4">
+        <div ref={messagesContainerRef} className="space-y-4">
           {messages.map((message, index) => (
             <motion.div
               key={message.id}
@@ -289,9 +314,6 @@ export function ChatDemo() {
               </div>
             </motion.div>
           )}
-          
-          {/* Only render scroll target after messages have started */}
-          {hasStartedRef.current && <div ref={messagesEndRef} />}
         </div>
       </ScrollArea>
 
