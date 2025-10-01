@@ -141,13 +141,18 @@ export function ChatDemo() {
 
   return (
     <Card className="w-full max-w-md mx-auto bg-neutral-900/50 border-neutral-700/50 backdrop-blur-lg relative overflow-hidden">
-      {/* Border Beam Effect */}
+      {/* Border Beam Effects - Dual animated beams */}
       <BorderBeam 
-        size={200}
-        duration={8}
-        delay={2}
-        colorFrom="#737373"
-        colorTo="#525252"
+        duration={6}
+        size={400}
+        className="from-transparent via-neutral-500 to-transparent"
+      />
+      <BorderBeam 
+        duration={6}
+        delay={3}
+        size={400}
+        borderWidth={2}
+        className="from-transparent via-neutral-600 to-transparent"
       />
       
       {/* Chat Messages - Scrollable area for mobile */}
