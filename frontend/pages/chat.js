@@ -21,6 +21,7 @@ import {
 import { useAccount, useWriteContract, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { availableFunctions, executeFunction } from "@/lib/llmActions";
 import { executeTokenTransfer, getExplorerUrl } from "@/lib/llmActions/executeTransfer";
+import { executeStakeCelo, getExplorerUrl as getStakeExplorerUrl } from "@/lib/llmActions/stakeCelo";
 import { useContacts } from "@/hooks/useContacts";
 import { ContactAutocomplete } from "@/components/contact-autocomplete";
 import { usdToCelo, parseUsdAmount } from "@/lib/currencyUtils";
@@ -195,6 +196,11 @@ AVAILABLE FUNCTIONS:
 2. REQUEST PAYMENT - When the user wants to REQUEST money FROM someone(s), split bills, or ask for payment:
 {"name": "request_payment", "arguments": {"fromAddresses": ["0x...", "0x..."], "totalAmount": "number", "tokenSymbol": "CELO", "description": "optional text"}}
 
+3. STAKE CELO - When the user wants to stake/save/earn rewards/earn yield/manage extra money:
+{"name": "stake_celo", "arguments": {"amount": "number"}}
+CRITICAL: If user mentions "save", "extra money", "earn rewards", "earn yield", "stake", "passive income" → USE this function DIRECTLY
+DO NOT provide instructions or explanations, IMMEDIATELY call stake_celo function
+
 PAYMENT REQUEST RULES:
 - CRITICAL: When user says "I paid X with @User1 and @User2", there are 3 people TOTAL (user + 2 others)
 - Each person's share = Total / Number of people INCLUDING the user
@@ -229,7 +235,16 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
 
 User: "I had dinner with 0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6 and 0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092, I paid 99 CELO help me split bill"
 Analysis: 3 people total (user + Alice + Bob), 99 / 3 = 33 CELO per person, request 33 from each
-You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "33", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "33"}, "tokenSymbol": "CELO", "description": "dinner"}}`;
+You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092"], "individualAmounts": {"0x1C4e764e1748CFe74EC579fa7C83AB081df6D6C6": "33", "0xf1a7b4b4B16fc24650D3dC96d5112b5c1F309092": "33"}, "tokenSymbol": "CELO", "description": "dinner"}}
+
+User: "I have extra money, help me earn rewards"
+You: How much CELO would you like to stake to earn rewards?
+
+User: "Stake 100 CELO"
+You: {"name": "stake_celo", "arguments": {"amount": "100"}}
+
+User: "I want to save 50 CELO"
+You: {"name": "stake_celo", "arguments": {"amount": "50"}}`;
 
       const apiMessages = [
         { role: "system", content: systemPrompt },
@@ -421,6 +436,75 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
       if (!showContactDropdown) {
         handleSendMessage();
       }
+    }
+  };
+
+  // Handle staking execution
+  const handleExecuteStake = async (stakeData) => {
+    const { amount } = stakeData;
+    
+    // Show processing message
+    const processingMessage = {
+      id: Date.now(),
+      type: "system",
+      text: "Processing stake... Please confirm in your wallet.",
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    };
+    setMessages(prev => [...prev, processingMessage]);
+    
+    try {
+      const result = await executeStakeCelo({
+        amount,
+        writeContract: writeContractAsync,
+        chainId: chain?.id || 42220,
+        userAddress,
+      });
+      
+      if (result.success) {
+        setPendingTxHash(result.hash);
+        
+        const explorerUrl = getStakeExplorerUrl(chain?.id || 42220, result.hash);
+        
+        const pendingMessage = {
+          id: Date.now() + 1,
+          type: "system",
+          text: `Staking transaction submitted! Waiting for confirmation...`,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, pendingMessage]);
+        
+        // Add a clickable link message
+        const linkMessage = {
+          id: Date.now() + 2,
+          type: "bot",
+          text: `View transaction: ${explorerUrl}`,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, linkMessage]);
+        
+      } else {
+        // Handle error
+        const errorMessage = {
+          id: Date.now() + 1,
+          type: "bot",
+          text: result.userRejected 
+            ? "Staking was cancelled. Let me know if you'd like to try again!"
+            : `Staking failed: ${result.error}`,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
+      
+    } catch (error) {
+      console.error('Staking execution error:', error);
+      
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: "bot",
+        text: "Sorry, there was an error executing the stake. Please try again.",
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages(prev => [...prev, errorMessage]);
     }
   };
 
@@ -745,6 +829,72 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
                         </div>
                       )}
 
+                      {/* Action Messages (Stake CELO Confirmation) */}
+                      {message.type === "action" && message.action?.type === "stake_celo" && (
+                        <div className="flex justify-start items-start gap-2">
+                          <Avatar className="h-8 w-8 bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center">
+                            <Sparkles className="h-4 w-4 text-white" />
+                          </Avatar>
+                          <div className="max-w-[80%] md:max-w-[70%]">
+                            <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-2xl rounded-tl-md px-4 py-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Sparkles className="h-4 w-4 text-white" />
+                                <p className="text-sm text-green-300 font-medium">Stake CELO Confirmation</p>
+                              </div>
+                              
+                              <div className="space-y-2 text-xs text-neutral-300 mb-3">
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">Amount to Stake:</span>
+                                  <span className="font-medium text-white">{message.action.data.amount} CELO</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">You'll Receive:</span>
+                                  <span className="font-medium text-green-300">~{message.action.data.amount} stCELO</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-neutral-400">Contract:</span>
+                                  <span className="font-mono text-xs">{message.action.data.contractAddress?.substring(0, 10)}...</span>
+                                </div>
+                                <div className="mt-2 pt-2 border-t border-neutral-700">
+                                  <p className="text-neutral-400 text-xs">
+                                    💡 Earn rewards by staking CELO. Your stCELO can be unstaked anytime.
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-xs"
+                                  disabled={isConfirming}
+                                  onClick={() => handleExecuteStake(message.action.args)}
+                                >
+                                  {isConfirming ? 'Staking...' : 'Confirm Stake'}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700 text-xs"
+                                  disabled={isConfirming}
+                                  onClick={() => {
+                                    const cancelMsg = {
+                                      id: messages.length + 1,
+                                      type: "bot",
+                                      text: "Staking cancelled. How else can I help you?",
+                                      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                                    };
+                                    setMessages(prev => [...prev, cancelMsg]);
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-neutral-500 mt-1">{message.timestamp}</p>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Action Messages (Payment Request Confirmation) */}
                       {message.type === "action" && message.action?.type === "request_payment" && (
                         <div className="flex justify-start items-start gap-2">
@@ -914,6 +1064,14 @@ You: {"name": "request_payment", "arguments": {"fromAddresses": ["0x1C4e764e1748
                 className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
               >
                 Transfer to Carol
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setInputValue("I want to stake 100 CELO to earn rewards")}
+                className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white text-xs"
+              >
+                Stake CELO
               </Button>
             </div>
           </motion.div>
