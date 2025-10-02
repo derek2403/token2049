@@ -2,15 +2,15 @@
 
 **Natural Language Crypto Transactions on Celo MiniPay**
 
-**AI-powered transaction assistant built as a Celo MiniPay app with conversational interface**
+**AI-powered transaction assistant built as a Celo MiniPay MiniApp with conversational interface**
 
 Check out the live demo of **LeftAI**: 👉 [Click here to try it out](https://token2049-two.vercel.app/)
 
-> **📱 MiniPay Ready:** This app is optimized for Celo MiniPay! Open the link in MiniPay browser for the best mobile experience.
+> **📱 MiniPay MiniApp:** This is a Celo MiniPay MiniApp optimized for mobile! Open the link in MiniPay browser for the best experience.
 
-## MiniPay Experience 📱
+## MiniPay MiniApp Experience 📱
 
-LeftAI is designed as a mobile-first application, optimized for Celo MiniPay's mobile wallet experience. The interface provides an intuitive, chat-based interaction for crypto transactions on the go.
+LeftAI is built as a Celo MiniPay MiniApp - a mobile-first application optimized for MiniPay's mobile wallet ecosystem. The interface provides an intuitive, chat-based interaction for crypto transactions on the go.
 
 <p align="center">
   <img src="./frontend/public/mobile%20landing.png" alt="LeftAI MiniPay Landing" width="350">
@@ -38,7 +38,7 @@ We noticed that blockchain transactions are still too complex for mainstream ado
 
 That question sparked LeftAI. By combining natural language processing with AI function calling (powered by Phala's confidential computing network), contact management, and smart contract automation, we created an interface where anyone can execute crypto transactions as easily as sending a text message.
 
-This exploration led us to build LeftAI as a **Celo MiniPay app** - a mobile-first, PWA-optimized application that:
+This exploration led us to build LeftAI as a **Celo MiniPay MiniApp** - a mobile-first, PWA-optimized application that:
 
 - **Understands natural language commands** using RedPill AI (Phala Network)
 - **Resolves contacts automatically** with @mentions (like Twitter/Slack)
@@ -336,7 +336,7 @@ token2049/
 
 ## Deployment 🚢
 
-### Frontend (Vercel as MiniPay App)
+### Frontend (Vercel as MiniPay MiniApp)
 ```bash
 cd frontend
 npm run build
@@ -344,8 +344,8 @@ npm run build
 # Access via MiniPay browser or any mobile device
 ```
 
-**MiniPay Integration:**
-- App is optimized for Celo MiniPay mobile wallet
+**MiniPay MiniApp Integration:**
+- Built as a Celo MiniPay MiniApp optimized for mobile wallet experience
 - Works as a Progressive Web App (PWA)
 - Supports MiniPay wallet alongside MetaMask and other Web3 wallets
 
