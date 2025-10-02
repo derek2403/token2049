@@ -37,13 +37,21 @@ export function NotificationBell() {
       const response = await fetch(`/api/notifications?walletAddress=${userAddress}`)
       const data = await response.json()
 
-      if (data.success && data.notifications) {
-        // Filter for pending notifications where user is recipient
-        const pendingNotifs = data.notifications.filter(
-          n => n.to?.toLowerCase() === userAddress.toLowerCase() && n.status === 'pending'
-        )
-        setNotifications(pendingNotifs)
-        setUnreadCount(pendingNotifs.length)
+      if (data.success && data.hasNotification && data.notification) {
+        // API now returns single latest notification
+        const notif = data.notification;
+        
+        // Only show if it's pending
+        if (notif.status === 'pending') {
+          setNotifications([notif]); // Wrap in array for consistency
+          setUnreadCount(1);
+        } else {
+          setNotifications([]);
+          setUnreadCount(0);
+        }
+      } else {
+        setNotifications([]);
+        setUnreadCount(0);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error)

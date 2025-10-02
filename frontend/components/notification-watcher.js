@@ -32,19 +32,21 @@ export function NotificationWatcher() {
         const response = await fetch(`/api/notifications?walletAddress=${userAddress}`)
         const data = await response.json()
 
-        if (data.success && data.notifications) {
-          // Filter for notifications that haven't been shown yet
-          const newNotifications = data.notifications.filter(notif => {
-            // Validate: only show if connected wallet matches recipient address
-            const isRecipient = notif.to?.toLowerCase() === userAddress.toLowerCase()
-            const notShown = !shownNotifications.current.has(notif.id)
-            const isPending = notif.status === 'pending'
-            
-            return isRecipient && notShown && isPending
-          })
+        if (data.success && data.hasNotification && data.notification) {
+          // API now returns single latest notification
+          const notif = data.notification;
+          
+          // Check if this notification should be shown
+          const isRecipient = notif.to?.toLowerCase() === userAddress.toLowerCase()
+          const notShown = !shownNotifications.current.has(notif.id)
+          const isPending = notif.status === 'pending'
+          
+          // Only show if all conditions are met
+          if (isRecipient && notShown && isPending) {
+            const newNotifications = [notif];
 
-          // Show each new notification as a toast (they persist until paid)
-          for (const notif of newNotifications) {
+            // Show each new notification as a toast (they persist until paid)
+            for (const notif of newNotifications) {
             showNotification({
               id: notif.id, // Pass the notification ID so it can be tracked
               type: notif.type || 'payment_request',
@@ -56,11 +58,12 @@ export function NotificationWatcher() {
               fromAddress: notif.from,
             })
 
-            // Mark as shown (so we don't show it again)
-            shownNotifications.current.add(notif.id)
-            
-            // Note: We DON'T delete from backend here
-            // It will only be deleted when user pays (in handlePayNow)
+              // Mark as shown (so we don't show it again)
+              shownNotifications.current.add(notif.id)
+              
+              // Note: We DON'T delete from backend here
+              // It will only be deleted when user pays (in handlePayNow)
+            }
           }
         }
       } catch (error) {
