@@ -207,13 +207,6 @@ export function Navbar() {
                     {link.name}
                   </Link>
                 ))}
-                {/* Mobile wallet section */}
-                <div className="mt-6 pt-6 border-t border-neutral-800/50 space-y-3">
-                  <div className="px-3">
-                    {/* Connect button for mobile menu */}
-                    <ConnectButton />
-                  </div>
-                </div>
               </nav>
             </SheetContent>
           </Sheet>
@@ -233,21 +226,25 @@ export function Navbar() {
           </Link>
         </div>
         
-        {/* Mobile Balance & Notification - Visible on top right - Only show when connected */}
-        {isConnected && (
-          <div className="md:hidden flex items-center gap-2">
-            <NotificationBell />
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => setIsBalanceOpen(true)}
-              className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-            >
-              <Wallet className="h-4 w-4 mr-1" />
-              Balance
-            </Button>
-          </div>
-        )}
+        {/* Mobile - Top Right Actions */}
+        <div className="md:hidden flex items-center gap-2">
+          {isConnected ? (
+            <>
+              <NotificationBell />
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => setIsBalanceOpen(true)}
+                className="bg-neutral-900/50 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+              >
+                <Wallet className="h-4 w-4 mr-1" />
+                Balance
+              </Button>
+            </>
+          ) : (
+            <ConnectButton />
+          )}
+        </div>
         
         {/* Desktop navigation */}
         <nav className="hidden md:flex items-center gap-8">

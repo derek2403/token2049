@@ -33,8 +33,10 @@ import { useNotifications } from "@/components/notification-toast";
  * Parses text and highlights @mentions and $amounts
  */
 function HighlightedText({ text }) {
-  // Combined pattern to match both @mentions and $amounts
-  const pattern = /(@[A-Za-z\s]+?)(?=\s|$|[^A-Za-z\s])|(\$\d+(?:\.\d+)?)/g;
+  // Combined pattern to match both @mentions (full names) and $amounts
+  // Pattern: @FirstName or @FirstName LastName (max 2 words)
+  // Stops at 2 words to avoid matching regular text after the name
+  const pattern = /(@[A-Za-z]+(?:\s+[A-Za-z]+)?)|(\$\d+(?:\.\d+)?)/g;
   
   const parts = [];
   let lastIndex = 0;
@@ -121,7 +123,7 @@ export default function Chat() {
     {
       id: 1,
       type: "bot",
-      text: "👋 Hello! I'm your LeftAI assistant. Tell me what you'd like to do with your crypto.",
+      text: "Hello! Let me know what you'd like to do with your funds!",
       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     }
   ]);
@@ -567,8 +569,8 @@ You: {"name": "stake_celo", "arguments": {"amount": "10"}}`;
     const beforeMention = inputValue.slice(0, mentionStartPos);
     const afterMention = inputValue.slice(mentionStartPos + contactSearchQuery.length + 1);
     
-    // Replace @query with @ContactName
-    const newValue = `${beforeMention}@${contact.name}${afterMention}`;
+    // Replace @query with @ContactName and add space after
+    const newValue = `${beforeMention}@${contact.name} ${afterMention}`;
     setInputValue(newValue);
     setShowContactDropdown(false);
     setMentionStartPos(null);
